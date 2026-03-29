@@ -34,6 +34,22 @@
 	let Timer: ComponentType;
 	let Weather: ComponentType;
 	let WeatherForecast: ComponentType;
+	let Person: ComponentType;
+	let Sun: ComponentType;
+	let Todo: ComponentType;
+	let MiniPlayer: ComponentType;
+	let Gauge: ComponentType;
+	let CalendarWidget: ComponentType;
+	let Thermostat: ComponentType;
+	let SolarFlow: ComponentType;
+	let AnalogClock: ComponentType;
+	let Battery: ComponentType;
+	let Markdown: ComponentType;
+	let AlbumArt: ComponentType;
+	let AutomationToggle: ComponentType;
+	let HomeModeWidget: ComponentType;
+	let NetworkMonitor: ComponentType;
+	let MyDay: ComponentType;
 
 	const imports = {
 		bar: () => import('$lib/Sidebar/Bar.svelte').then((c) => (Bar = c.default)),
@@ -55,7 +71,31 @@
 		timer: () => import('$lib/Sidebar/Timer.svelte').then((c) => (Timer = c.default)),
 		weather: () => import('$lib/Sidebar/Weather.svelte').then((c) => (Weather = c.default)),
 		weather_forecast: () =>
-			import('$lib/Sidebar/WeatherForecast.svelte').then((c) => (WeatherForecast = c.default))
+			import('$lib/Sidebar/WeatherForecast.svelte').then((c) => (WeatherForecast = c.default)),
+		person: () => import('$lib/Sidebar/Person.svelte').then((c) => (Person = c.default)),
+		sun: () => import('$lib/Sidebar/Sun.svelte').then((c) => (Sun = c.default)),
+		todo: () => import('$lib/Sidebar/Todo.svelte').then((c) => (Todo = c.default)),
+		mini_player: () =>
+			import('$lib/Sidebar/MiniPlayer.svelte').then((c) => (MiniPlayer = c.default)),
+		gauge: () => import('$lib/Sidebar/Gauge.svelte').then((c) => (Gauge = c.default)),
+		calendar_widget: () =>
+			import('$lib/Sidebar/CalendarWidget.svelte').then((c) => (CalendarWidget = c.default)),
+		thermostat: () =>
+			import('$lib/Sidebar/Thermostat.svelte').then((c) => (Thermostat = c.default)),
+		solar_flow: () =>
+			import('$lib/Sidebar/SolarFlow.svelte').then((c) => (SolarFlow = c.default)),
+		analog_clock: () =>
+			import('$lib/Sidebar/AnalogClock.svelte').then((c) => (AnalogClock = c.default)),
+		battery: () => import('$lib/Sidebar/Battery.svelte').then((c) => (Battery = c.default)),
+		markdown: () => import('$lib/Sidebar/Markdown.svelte').then((c) => (Markdown = c.default)),
+		album_art: () => import('$lib/Sidebar/AlbumArt.svelte').then((c) => (AlbumArt = c.default)),
+		automation_toggle: () =>
+			import('$lib/Sidebar/AutomationToggle.svelte').then((c) => (AutomationToggle = c.default)),
+		home_mode_widget: () =>
+			import('$lib/Sidebar/HomeModeWidget.svelte').then((c) => (HomeModeWidget = c.default)),
+		network_monitor: () =>
+			import('$lib/Sidebar/NetworkMonitor.svelte').then((c) => (NetworkMonitor = c.default)),
+		my_day: () => import('$lib/Sidebar/MyDay.svelte').then((c) => (MyDay = c.default))
 	};
 
 	$: if ($dashboard?.sidebar) importComponents();
@@ -133,6 +173,50 @@
 				openModal(() => import('$lib/Modal/WeatherConfig.svelte'), { sel });
 			} else if (sel?.type === 'weather_forecast') {
 				openModal(() => import('$lib/Modal/WeatherForecastConfig.svelte'), { sel });
+			} else if (sel?.type === 'todo') {
+				openModal(() => import('$lib/Modal/EntityCardConfig.svelte'), {
+					sel,
+					domain: 'todo',
+					title: 'Todo'
+				});
+			} else if (sel?.type === 'person') {
+				openModal(() => import('$lib/Modal/EntityCardConfig.svelte'), {
+					sel,
+					domain: 'person',
+					title: 'Person'
+				});
+			} else if (sel?.type === 'sun') {
+				openModal(() => import('$lib/Modal/SunConfig.svelte'), { sel });
+			} else if (sel?.type === 'mini_player') {
+				openModal(() => import('$lib/Modal/EntityCardConfig.svelte'), {
+					sel,
+					domain: 'media_player',
+					title: 'Mini Player'
+				});
+			} else if (sel?.type === 'gauge') {
+				openModal(() => import('$lib/Modal/GaugeConfig.svelte'), { sel });
+			} else if (sel?.type === 'calendar_widget') {
+				openModal(() => import('$lib/Modal/CalendarWidgetConfig.svelte'), { sel });
+			} else if (sel?.type === 'thermostat') {
+				openModal(() => import('$lib/Modal/ThermostatConfig.svelte'), { sel });
+			} else if (sel?.type === 'solar_flow') {
+				openModal(() => import('$lib/Modal/SolarFlowConfig.svelte'), { sel });
+			} else if (sel?.type === 'analog_clock') {
+				openModal(() => import('$lib/Modal/AnalogClockConfig.svelte'), { sel });
+			} else if (sel?.type === 'battery') {
+				openModal(() => import('$lib/Modal/BatteryConfig.svelte'), { sel });
+			} else if (sel?.type === 'markdown') {
+				openModal(() => import('$lib/Modal/MarkdownConfig.svelte'), { sel });
+			} else if (sel?.type === 'album_art') {
+				openModal(() => import('$lib/Modal/AlbumArtConfig.svelte'), { sel });
+			} else if (sel?.type === 'automation_toggle') {
+				openModal(() => import('$lib/Modal/AutomationToggleConfig.svelte'), { sel });
+			} else if (sel?.type === 'home_mode_widget') {
+				openModal(() => import('$lib/Modal/HomeModeConfig.svelte'), { sel });
+			} else if (sel?.type === 'network_monitor') {
+				openModal(() => import('$lib/Modal/NetworkMonitorConfig.svelte'), { sel });
+			} else if (sel?.type === 'my_day') {
+				openModal(() => import('$lib/Modal/MyDayConfig.svelte'), { sel });
 			} else {
 				openModal(() => import('$lib/Modal/SidebarItemConfig.svelte'), { sel });
 
@@ -367,6 +451,7 @@
 								entity_id={item?.entity_id}
 								name={item?.name}
 								strokeWidth={item?.stroke}
+								thresholds={item?.thresholds}
 							/>
 						</div>
 
@@ -415,6 +500,110 @@
 						<button on:click={() => handleClick(item?.id)}>
 							<svelte:component this={WeatherForecast} sel={item} />
 						</button>
+
+						<!-- PERSON -->
+					{:else if Person && item?.type === 'person' && !hide_mobile}
+						<button on:click={() => handleClick(item?.id)}>
+							<svelte:component this={Person} sel={item} />
+						</button>
+
+						<!-- SUN -->
+					{:else if Sun && item?.type === 'sun' && !hide_mobile}
+						<button on:click={() => handleClick(item?.id)}>
+							<svelte:component this={Sun} sel={item} />
+						</button>
+
+						<!-- TODO -->
+					{:else if Todo && item?.type === 'todo' && !hide_mobile}
+						<button on:click={() => handleClick(item?.id)}>
+							<svelte:component this={Todo} sel={item} />
+						</button>
+
+						<!-- MINI PLAYER -->
+					{:else if MiniPlayer && item?.type === 'mini_player' && !hide_mobile}
+						<button on:click={() => handleClick(item?.id)}>
+							<svelte:component this={MiniPlayer} sel={item} />
+						</button>
+
+						<!-- GAUGE -->
+					{:else if Gauge && item?.type === 'gauge' && !hide_mobile}
+						<div on:click={() => handleClick(item?.id)} on:keydown role="button" tabindex="0">
+							<svelte:component
+								this={Gauge}
+								entity_id={item?.entity_id}
+								name={item?.name}
+								min={item?.min}
+								max={item?.max}
+								unit={item?.unit}
+								thresholds={item?.thresholds}
+							/>
+						</div>
+
+						<!-- CALENDAR WIDGET -->
+					{:else if CalendarWidget && item?.type === 'calendar_widget' && !hide_mobile}
+						<div on:click={() => handleClick(item?.id)} on:keydown role="button" tabindex="0">
+							<svelte:component this={CalendarWidget} sel={item} />
+						</div>
+
+						<!-- THERMOSTAT -->
+					{:else if Thermostat && item?.type === 'thermostat' && !hide_mobile}
+						<div on:click={() => handleClick(item?.id)} on:keydown role="button" tabindex="0">
+							<svelte:component this={Thermostat} sel={item} />
+						</div>
+
+						<!-- SOLAR FLOW -->
+					{:else if SolarFlow && item?.type === 'solar_flow' && !hide_mobile}
+						<div on:click={() => handleClick(item?.id)} on:keydown role="button" tabindex="0">
+							<svelte:component this={SolarFlow} sel={item} />
+						</div>
+
+						<!-- ANALOG CLOCK -->
+					{:else if AnalogClock && item?.type === 'analog_clock' && !hide_mobile}
+						<button on:click={() => handleClick(item?.id)}>
+							<svelte:component this={AnalogClock} sel={item} />
+						</button>
+
+						<!-- BATTERY MONITOR -->
+					{:else if Battery && item?.type === 'battery' && !hide_mobile}
+						<div on:click={() => handleClick(item?.id)} on:keydown role="button" tabindex="0">
+							<svelte:component this={Battery} sel={item} />
+						</div>
+
+						<!-- MARKDOWN -->
+					{:else if Markdown && item?.type === 'markdown' && !hide_mobile}
+						<div on:click={() => handleClick(item?.id)} on:keydown role="button" tabindex="0">
+							<svelte:component this={Markdown} sel={item} />
+						</div>
+
+						<!-- ALBUM ART -->
+					{:else if AlbumArt && item?.type === 'album_art' && !hide_mobile}
+						<div on:click={() => handleClick(item?.id)} on:keydown role="button" tabindex="0">
+							<svelte:component this={AlbumArt} sel={item} />
+						</div>
+
+						<!-- AUTOMATION TOGGLE -->
+					{:else if AutomationToggle && item?.type === 'automation_toggle' && !hide_mobile}
+						<div on:click={() => handleClick(item?.id)} on:keydown role="button" tabindex="0">
+							<svelte:component this={AutomationToggle} sel={item} />
+						</div>
+
+						<!-- HOME MODE WIDGET -->
+					{:else if HomeModeWidget && item?.type === 'home_mode_widget' && !hide_mobile}
+						<div on:click={() => handleClick(item?.id)} on:keydown role="button" tabindex="0">
+							<svelte:component this={HomeModeWidget} sel={item} />
+						</div>
+
+						<!-- MY DAY -->
+					{:else if MyDay && item?.type === 'my_day' && !hide_mobile}
+						<div on:click={() => handleClick(item?.id)} on:keydown role="button" tabindex="0">
+							<svelte:component this={MyDay} sel={item} />
+						</div>
+
+						<!-- NETWORK MONITOR -->
+					{:else if NetworkMonitor && item?.type === 'network_monitor' && !hide_mobile}
+						<div on:click={() => handleClick(item?.id)} on:keydown role="button" tabindex="0">
+							<svelte:component this={NetworkMonitor} sel={item} />
+						</div>
 					{/if}
 				</div>
 			{/each}

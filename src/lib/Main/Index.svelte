@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { editMode, motion, record, dragging, itemHeight, states, dashboard } from '$lib/Stores';
+	import { editMode, sortMode, motion, record, dragging, itemHeight, states, dashboard, currentViewId, timer } from '$lib/Stores';
 	import { onMount, tick } from 'svelte';
 	import { flip } from 'svelte/animate';
 	import { dndzone, TRIGGERS, SHADOW_ITEM_MARKER_PROPERTY_NAME } from 'svelte-dnd-action';
@@ -9,6 +9,91 @@
 	import Scenes from '$lib/Main/Scenes.svelte';
 	import { handleVisibility, mediaQueries } from '$lib/Conditional';
 	import { generateId } from '$lib/Utils';
+	import { openModal } from 'svelte-modals';
+
+	// ── Long press quick actions ─────────────────────────────────────────────
+	let longPressTimer: ReturnType<typeof setTimeout> | null = null;
+	let longPressItem: any = null;
+
+	function openCardConfig(item: any) {
+		const type = item?.type;
+		if (!type || type === 'configure') {
+			openModal(() => import('$lib/Modal/MainItemConfig.svelte'), { sel: item });
+		} else if (type === 'button') {
+			openModal(() => import('$lib/Modal/ButtonConfig.svelte'), { sel: item });
+		} else if (type === 'light') {
+			openModal(() => import('$lib/Modal/LightConfig.svelte'), { sel: item });
+		} else if (type === 'climate') {
+			openModal(() => import('$lib/Modal/EntityCardConfig.svelte'), { sel: item, domain: 'climate', title: 'Климат' });
+		} else if (type === 'media_player') {
+			openModal(() => import('$lib/Modal/EntityCardConfig.svelte'), { sel: item, domain: 'media_player', title: 'Медиаплеер' });
+		} else if (type === 'camera') {
+			openModal(() => import('$lib/Modal/CameraConfig.svelte'), { sel: item });
+		} else if (type === 'area_overview') {
+			openModal(() => import('$lib/Modal/AreaCardConfig.svelte'), { sel: item });
+		} else if (type === 'fan') {
+			openModal(() => import('$lib/Modal/EntityCardConfig.svelte'), { sel: item, domain: 'fan', title: 'Вентилятор' });
+		} else if (type === 'presence') {
+			openModal(() => import('$lib/Modal/EntityCardConfig.svelte'), { sel: item, domain: 'person', title: 'Присутствие' });
+		} else if (type === 'scene_chips') {
+			openModal(() => import('$lib/Modal/SceneChipsConfig.svelte'), { sel: item });
+		} else if (type === 'energy_card') {
+			openModal(() => import('$lib/Modal/EnergyCardConfig.svelte'), { sel: item });
+		} else if (type === 'quick_actions') {
+			openModal(() => import('$lib/Modal/QuickActionsConfig.svelte'), { sel: item });
+		} else if (type === 'multi_cam_grid') {
+			openModal(() => import('$lib/Modal/MultiCamGridConfig.svelte'), { sel: item });
+		} else if (type === 'device_tracker') {
+			openModal(() => import('$lib/Modal/DeviceTrackerConfig.svelte'), { sel: item });
+		} else if (type === 'cover') {
+			openModal(() => import('$lib/Modal/CoverConfig.svelte'), { sel: item });
+		} else if (type === 'lock_card') {
+			openModal(() => import('$lib/Modal/EntityCardConfig.svelte'), { sel: item, domain: 'lock', title: 'Замок' });
+		} else if (type === 'vacuum') {
+			openModal(() => import('$lib/Modal/EntityCardConfig.svelte'), { sel: item, domain: 'vacuum', title: 'Пылесос' });
+		} else if (type === 'button_group') {
+			openModal(() => import('$lib/Modal/ButtonGroupConfig.svelte'), { sel: item });
+		} else if (type === 'sensor_grid') {
+			openModal(() => import('$lib/Modal/SensorGridConfig.svelte'), { sel: item });
+		} else if (type === 'script_runner') {
+			openModal(() => import('$lib/Modal/ScriptRunnerConfig.svelte'), { sel: item });
+		} else if (type === 'prayer_times') {
+			openModal(() => import('$lib/Modal/PrayerTimesConfig.svelte'), { sel: item });
+		} else if (type === 'resource_meter') {
+			openModal(() => import('$lib/Modal/ResourceMeterConfig.svelte'), { sel: item });
+		} else if (type === 'floor_plan_card') {
+			openModal(() => import('$lib/Modal/FloorPlanConfig.svelte'), { sel: item });
+		} else if (type === 'conditional_media') {
+			openModal(() => import('$lib/Modal/ConditionalMediaConfig.svelte'), { sel: item });
+		} else if (type === 'picture_elements') {
+			openModal(() => import('$lib/Modal/PictureElements/PictureElementsConfig.svelte'), { sel: item });
+		} else if (type === 'alarm_card') {
+			openModal(() => import('$lib/Modal/EntityCardConfig.svelte'), { sel: item, domain: 'alarm_control_panel', title: 'Охрана' });
+		} else if (type === 'irrigation_card') {
+			openModal(() => import('$lib/Modal/IrrigationConfig.svelte'), { sel: item });
+		} else {
+			openModal(() => import('$lib/Modal/EntityCardConfig.svelte'), { sel: item });
+		}
+	}
+
+	function startLongPress(item: any) {
+		if ($editMode) return;
+		longPressItem = item;
+		longPressTimer = setTimeout(() => {
+			longPressTimer = null;
+			if (longPressItem && !$editMode) {
+				openCardConfig(longPressItem);
+			}
+		}, 500);
+	}
+
+	function cancelLongPress() {
+		if (longPressTimer) {
+			clearTimeout(longPressTimer);
+			longPressTimer = null;
+		}
+		longPressItem = null;
+	}
 
 	export let view: any;
 	export let altKeyPressed: boolean;
@@ -27,7 +112,7 @@
 
 	$: dndOptions = {
 		flipDurationMs: $motion,
-		dragDisabled: !$editMode,
+		dragDisabled: !$editMode && !$sortMode,
 		dropTargetStyle: {},
 		zoneTabIndex: -1
 	};
@@ -180,13 +265,48 @@
     `;
 	}
 
-	function itemStyles(type: string) {
-		const large = ['conditional_media', 'picture_elements', 'camera'];
+	function itemStyles(type: string, size?: string) {
+		const large = ['conditional_media', 'picture_elements', 'camera', 'media_player'];
+		const colSpan =
+			size === 'large'
+				? 'span 2'
+				: size === 'full'
+					? '1 / -1'
+					: large.includes(type)
+						? 'span 2'
+						: 'span 1';
+		const rowSpan = large.includes(type) && !size ? 'span 4' : 'span 1';
+		const minHeight = size === 'small' ? '50px' : '';
 		return `
-			grid-column: ${large.includes(type) ? 'span 2' : 'span 1'};
-			grid-row: ${large.includes(type) ? 'span 4' : 'span 1'};
+			grid-column: ${colSpan};
+			grid-row: ${rowSpan};
 			display: ${type ? '' : 'none'};
+			${minHeight ? `min-height: ${minHeight};` : ''}
     `;
+	}
+
+	// swipe between views on mobile
+	let touchStartX = 0;
+	let touchStartY = 0;
+
+	function handleTouchStart(e: TouchEvent) {
+		touchStartX = e.touches[0].clientX;
+		touchStartY = e.touches[0].clientY;
+	}
+
+	function handleTouchEnd(e: TouchEvent) {
+		const dx = e.changedTouches[0].clientX - touchStartX;
+		const dy = e.changedTouches[0].clientY - touchStartY;
+		if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy)) return;
+
+		const views = $dashboard?.views || [];
+		const currentIndex = views.findIndex((v: any) => v.id === $currentViewId);
+
+		if (dx < 0 && currentIndex < views.length - 1) {
+			$currentViewId = views[currentIndex + 1].id;
+		} else if (dx > 0 && currentIndex > 0) {
+			$currentViewId = views[currentIndex - 1].id;
+		}
 	}
 
 	/**
@@ -267,22 +387,53 @@
 	 * Otherwise filter the sections based on current states and conditions.
 	 *
 	 * This statement reactively updates when any of the following change:
-	 * $editMode, mounted, $mediaQueries, view?.sections, $states
+	 * $editMode, mounted, $mediaQueries, view?.sections, $states, $timer (minute)
 	 */
+	$: _minute = Math.floor($timer.getTime() / 60000);
 	$: viewSections = $editMode
 		? view?.sections
-		: typeof mounted === 'boolean' &&
+		: _minute !== undefined &&
+			typeof mounted === 'boolean' &&
 			typeof $mediaQueries === 'object' &&
 			handleVisibility($editMode, view?.sections, $states);
+
+	// Adaptive ambient background: derive a subtle color from first 'on' light in view
+	$: ambientColor = (() => {
+		if (view?.background_url) return null; // don't override explicit background
+		const allItems = view?.sections?.flatMap((s: any) =>
+			s.type === 'horizontal-stack' ? s.sections?.flatMap((ss: any) => ss.items || []) : s.items || []
+		) || [];
+		const firstLight = allItems.find(
+			(item: any) => item?.entity_id && $states?.[item.entity_id]?.state === 'on' &&
+				$states?.[item.entity_id]?.attributes?.hs_color
+		);
+		if (!firstLight) return null;
+		const hs = $states?.[firstLight.entity_id]?.attributes?.hs_color;
+		return hs ? `hsla(${hs[0]}, ${Math.min(hs[1], 60)}%, 8%, 0.6)` : null;
+	})();
 </script>
 
 <main
-	style:transition="opacity {$motion}ms ease, outline-color {$motion}ms ease"
+	style:transition="opacity {$motion}ms ease, outline-color {$motion}ms ease, background {1000}ms ease"
 	style:opacity={$editMode && view?.sections.length === 0 ? '0' : '1'}
+	style:background-image={view?.background_url ? `url('${view.background_url}')` : ''}
+	style:background-size={view?.background_url ? 'cover' : ''}
+	style:background-position={view?.background_url ? 'center' : ''}
+	style:background-color={ambientColor || ''}
+	class:bg-blur={view?.background_blur}
 	use:dndzone={{ ...dndOptions, type: 'section', items: view.sections }}
 	on:consider={dragSection}
 	on:finalize={dragSection}
+	on:touchstart={handleTouchStart}
+	on:touchend={handleTouchEnd}
 >
+	{#if $sortMode && !$editMode}
+		<div class="sort-banner">
+			<span>Режим сортировки — перетащите карточки для перестановки</span>
+			<button on:click={() => ($sortMode = false)}>✕</button>
+		</div>
+	{/if}
+
 	{#each viewSections as section (`${section?.id}${section?.[SHADOW_ITEM_MARKER_PROPERTY_NAME] ? '_' + section?.[SHADOW_ITEM_MARKER_PROPERTY_NAME] : ''}`)}
 		<section
 			id={String(section?.id)}
@@ -335,9 +486,16 @@
 										id={item?.id}
 										data-is-dnd-shadow-item-hint={item?.[SHADOW_ITEM_MARKER_PROPERTY_NAME]}
 										class="item"
+										class:anim-pulse={item?.animation === 'pulse'}
+										class:anim-glow={item?.animation === 'glow'}
+										class:anim-bounce={item?.animation === 'bounce'}
 										animate:flip={{ duration: $motion }}
 										tabindex="-1"
-										style={itemStyles(item?.type)}
+										style={itemStyles(item?.type, item?.size)}
+										on:pointerdown={() => startLongPress(item)}
+										on:pointerup={cancelLongPress}
+										on:pointerleave={cancelLongPress}
+										on:pointermove={cancelLongPress}
 									>
 										<Content {item} sectionName={stackSection?.name} />
 									</div>
@@ -403,7 +561,11 @@
 							class="item"
 							animate:flip={{ duration: $motion }}
 							tabindex="-1"
-							style={itemStyles(item?.type)}
+							style={itemStyles(item?.type, item?.size)}
+							on:pointerdown={() => startLongPress(item)}
+							on:pointerup={cancelLongPress}
+							on:pointerleave={cancelLongPress}
+							on:pointermove={cancelLongPress}
 						>
 							<Content {item} sectionName={section?.name} />
 						</div>
@@ -422,6 +584,30 @@
 		gap: 1.5rem;
 		outline: transparent;
 		align-content: start;
+	}
+
+	.sort-banner {
+		grid-column: 1 / -1;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		background: rgba(255, 193, 7, 0.12);
+		border: 1px solid rgba(255, 193, 7, 0.3);
+		border-radius: 0.5rem;
+		padding: 0.4rem 0.8rem;
+		font-size: 0.82rem;
+		color: #ffc107;
+		gap: 0.5rem;
+	}
+
+	.sort-banner button {
+		background: transparent;
+		border: none;
+		color: rgba(255, 193, 7, 0.7);
+		cursor: pointer;
+		font-size: 0.9rem;
+		padding: 0.1rem 0.3rem;
+		flex-shrink: 0;
 	}
 
 	section {
@@ -452,6 +638,47 @@
 	.item {
 		position: relative;
 		border-radius: 0.65rem;
+	}
+
+	.item.anim-pulse {
+		animation: card-pulse 2.5s ease-in-out infinite;
+	}
+
+	.item.anim-glow {
+		animation: card-glow 2s ease-in-out infinite;
+	}
+
+	.item.anim-bounce {
+		animation: card-bounce 1.8s ease-in-out infinite;
+	}
+
+	@keyframes card-pulse {
+		0%, 100% { opacity: 1; }
+		50% { opacity: 0.6; }
+	}
+
+	@keyframes card-glow {
+		0%, 100% { box-shadow: 0 0 0px rgba(255, 193, 7, 0); }
+		50% { box-shadow: 0 0 14px rgba(255, 193, 7, 0.45); }
+	}
+
+	@keyframes card-bounce {
+		0%, 100% { transform: translateY(0); }
+		40% { transform: translateY(-4px); }
+		60% { transform: translateY(-2px); }
+	}
+
+	main.bg-blur {
+		backdrop-filter: blur(12px);
+	}
+
+	main.bg-blur::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: inherit;
+		filter: blur(12px);
+		z-index: -1;
 	}
 
 	/* Phone and Tablet (portrait) */

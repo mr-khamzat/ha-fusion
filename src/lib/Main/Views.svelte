@@ -7,17 +7,46 @@
 		editMode,
 		viewUnderline,
 		highlightView,
-		draggingView
+		draggingView,
+		states
 	} from '$lib/Stores';
 	import { dndzone } from 'svelte-dnd-action';
 	import { flip } from 'svelte/animate';
 	import { slide, fade } from 'svelte/transition';
 	import { modals } from 'svelte-modals';
-	import { onMount, tick } from 'svelte';
+	import { onMount, onDestroy, tick } from 'svelte';
 	import EditViewButton from '$lib/Main/EditViewButton.svelte';
 	import EyeIndicator from '$lib/Main/EyeIndicator.svelte';
+	import { handleState, handleNumericState } from '$lib/Conditional';
 
 	export let view: any;
+
+	// Auto-switch views based on conditions
+	let autoSwitchInterval: ReturnType<typeof setInterval>;
+
+	function evaluateAutoSwitch() {
+		if ($editMode) return;
+		for (const v of $dashboard?.views || []) {
+			if (!v.auto_switch?.length) continue;
+			const allPass = v.auto_switch.every((cond: any) => {
+				if (cond.condition === 'state') return handleState($states, cond);
+				if (cond.condition === 'numeric_state') return handleNumericState($states, cond);
+				return false;
+			});
+			if (allPass && $currentViewId !== v.id) {
+				$currentViewId = v.id;
+				break;
+			}
+		}
+	}
+
+	onMount(() => {
+		autoSwitchInterval = setInterval(evaluateAutoSwitch, 10_000);
+	});
+
+	onDestroy(() => {
+		clearInterval(autoSwitchInterval);
+	});
 
 	let buttons: { [key: number]: HTMLButtonElement } = {};
 	let width: number;

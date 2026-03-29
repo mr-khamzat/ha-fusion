@@ -50,6 +50,7 @@
 		$dashboard = $dashboard;
 	}
 
+
 	onDestroy(() => $record());
 
 	let servicePlaceholder: string;

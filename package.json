@@ -1,6 +1,7 @@
 {
 	"name": "ha-fusion",
-	"version": "2024.10.0",
+	"version": "2026.3.40",
+	"description": "A modern, easy-to-use and performant custom Home Assistant dashboard - Fork maintained by mr-khamzat with enhanced features",
 	"private": true,
 	"scripts": {
 		"dev": "vite dev",
@@ -42,6 +43,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@anthropic-ai/sdk": "^0.36.3",
 		"@codemirror/autocomplete": "^6.18.1",
 		"@codemirror/commands": "^6.7.0",
 		"@codemirror/language": "^6.10.3",

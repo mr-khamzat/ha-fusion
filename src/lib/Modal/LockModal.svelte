@@ -14,6 +14,7 @@
 
 	let opening = false;
 	let timeout: ReturnType<typeof setTimeout>;
+	let pinCode = '';
 
 	$: entity = $states[sel?.entity_id];
 	$: entity_id = entity?.entity_id;
@@ -41,6 +42,12 @@
 		}, 2000);
 	}
 
+	function handlePinUnlock() {
+		if (!pinCode) return;
+		callService($connection, 'lock', 'unlock', { entity_id, code: pinCode });
+		pinCode = '';
+	}
+
 	onDestroy(() => {
 		clearTimeout(timeout);
 	});
@@ -59,6 +66,25 @@
 				<Toggle bind:checked={toggle} on:change={handleClick} />
 			</div>
 		</div>
+
+		<!-- PIN code unlock -->
+		{#if attributes?.code_format}
+			<h2>PIN code</h2>
+			<div class="pin-container">
+				<input
+					type="password"
+					inputmode="numeric"
+					pattern="[0-9]*"
+					maxlength="8"
+					bind:value={pinCode}
+					placeholder="••••"
+					class="pin-input"
+				/>
+				<button class="done action" use:Ripple={$ripple} on:click={handlePinUnlock}>
+					{$lang('unlock')}
+				</button>
+			</div>
+		{/if}
 
 		<!-- buttons -->
 		{#if supports?.OPEN}
@@ -106,5 +132,29 @@
 	.add-config-button > button {
 		height: fit-content;
 		align-self: end;
+	}
+
+	.pin-container {
+		display: flex;
+		gap: 0.75rem;
+		align-items: center;
+		margin-bottom: 1rem;
+	}
+
+	.pin-input {
+		background: rgba(0, 0, 0, 0.25);
+		border: 1px solid rgba(255, 255, 255, 0.15);
+		border-radius: 0.5rem;
+		color: white;
+		font-size: 1.1rem;
+		letter-spacing: 0.2em;
+		padding: 0.5rem 0.75rem;
+		width: 7rem;
+		outline: none;
+		font-family: inherit;
+	}
+
+	.pin-input:focus {
+		border-color: rgba(255, 255, 255, 0.4);
 	}
 </style>

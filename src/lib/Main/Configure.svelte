@@ -31,14 +31,16 @@
 	});
 </script>
 
-<div
-	style:min-height="{$itemHeight}px"
-	on:click={handleClick}
-	style:cursor={$editMode ? 'unset' : 'pointer'}
-	on:keydown
-	role="button"
-	tabindex="0"
-></div>
+{#if $editMode}
+	<div
+		style:min-height="{$itemHeight}px"
+		on:click={handleClick}
+		style:cursor="unset"
+		on:keydown
+		role="button"
+		tabindex="0"
+	></div>
+{/if}
 
 <style>
 	div {

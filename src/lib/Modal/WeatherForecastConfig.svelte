@@ -7,7 +7,8 @@
 		ripple,
 		history,
 		historyIndex,
-		entityList
+		entityList,
+		forecasts
 	} from '$lib/Stores';
 	import { onDestroy } from 'svelte';
 	import WeatherForecast from '$lib/Sidebar/WeatherForecast.svelte';
@@ -49,9 +50,14 @@
 
 	$: options = $entityList('weather');
 
+	// Use subscribed forecast count when available (modern API),
+	// fall back to attributes.forecast (Yandex legacy), default to 7
+	$: forecastLength =
+		($forecasts?.[sel?.id]?.forecast?.length ?? entity?.attributes?.forecast?.length) || 7;
+
 	$: range = {
 		min: 1,
-		max: Math.min(entity?.attributes?.forecast?.length ?? 7, 7)
+		max: Math.min(forecastLength, 7)
 	};
 
 	function minMax(key: string | number | undefined) {

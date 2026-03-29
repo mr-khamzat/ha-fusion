@@ -1,0 +1,30 @@
+title: glassmorphism
+author: ha-fusion
+attribution: ''
+thumbnail: glassmorphism_thumbnail.webp
+theme:
+  colors-text: rgba(255, 255, 255, 0.88)
+  colors-icon: rgba(255, 255, 255, 0.9)
+  colors-title: rgba(255, 255, 255, 0.75)
+  colors-sidebar-border: 1px solid rgba(255, 255, 255, 0.12)
+  colors-sidebar-background: rgba(255, 255, 255, 0.05)
+  sizes-sidebar-time: 3.4rem
+  background-image: none
+  font-family: "'Inter Variable', system-ui"
+  button-background-color-on: rgba(255, 255, 255, 0.22)
+  button-background-color-off: rgba(255, 255, 255, 0.07)
+  drawer-button-background-color: rgba(255, 255, 255, 0.08)
+  button-name-color-on: rgba(255, 255, 255, 0.95)
+  button-name-color-off: rgba(255, 255, 255, 0.55)
+  button-state-color-on: rgba(255, 255, 255, 0.65)
+  button-state-color-off: rgba(255, 255, 255, 0.35)
+  modal-background-color: rgba(10, 10, 20, 0.55)
+  border-radius: 1rem
+  sidebar-font-size: 1rem
+  sidebar-item-padding: 0.65rem 0.75rem
+  sidebar-padding: 0 1.2rem
+  drawer-font-size: 0.925rem
+  sidebar-divider: 1px solid rgba(255, 255, 255, 0.08)
+  navigate-background-color: rgba(255, 255, 255, 0.08)
+  app-color: '#0a0a14'
+  modal-background-color-modal: rgba(8, 8, 18, 0.65)

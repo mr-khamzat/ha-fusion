@@ -1,0 +1,30 @@
+title: amoled
+author: ha-fusion
+attribution: ''
+thumbnail: amoled_thumbnail.webp
+theme:
+  colors-text: rgba(255, 255, 255, 0.92)
+  colors-icon: rgba(255, 255, 255, 0.95)
+  colors-title: rgba(255, 255, 255, 0.7)
+  colors-sidebar-border: 1px solid rgba(255, 255, 255, 0.06)
+  colors-sidebar-background: rgba(0, 0, 0, 0.0)
+  sizes-sidebar-time: 3.4rem
+  background-image: none
+  font-family: "'Inter Variable', system-ui"
+  button-background-color-on: rgba(99, 102, 241, 0.85)
+  button-background-color-off: rgba(255, 255, 255, 0.05)
+  drawer-button-background-color: rgba(255, 255, 255, 0.05)
+  button-name-color-on: rgb(255, 255, 255)
+  button-name-color-off: rgba(255, 255, 255, 0.5)
+  button-state-color-on: rgba(255, 255, 255, 0.8)
+  button-state-color-off: rgba(255, 255, 255, 0.28)
+  modal-background-color: rgba(0, 0, 0, 0.85)
+  border-radius: 0.8rem
+  sidebar-font-size: 1rem
+  sidebar-item-padding: 0.6rem 0.6rem
+  sidebar-padding: 0 1.2rem
+  drawer-font-size: 0.925rem
+  sidebar-divider: 1px solid rgba(255, 255, 255, 0.05)
+  navigate-background-color: rgba(255, 255, 255, 0.06)
+  app-color: '#000000'
+  modal-background-color-modal: rgba(0, 0, 0, 0.9)

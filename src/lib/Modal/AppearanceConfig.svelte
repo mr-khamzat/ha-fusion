@@ -191,6 +191,32 @@
 			</div>
 		{/if}
 
+		<h1 style:margin-top="1.9rem">Заставка экрана</h1>
+		<div class="screensaver-row">
+			<p class="ss-desc">Настройте что отображается при бездействии</p>
+			<button
+				class="ss-btn"
+				use:Ripple={$ripple}
+				on:click={() => openModal(() => import('$lib/Modal/ScreensaverConfig.svelte'), {})}
+			>
+				<Icon icon="mdi:television-play" height="none" />
+				Настроить
+			</button>
+		</div>
+
+		<h1 style:margin-top="1.9rem">Быстрые действия</h1>
+		<div class="screensaver-row">
+			<p class="ss-desc">Свайп вниз сверху экрана открывает шторку управления</p>
+			<button
+				class="ss-btn"
+				use:Ripple={$ripple}
+				on:click={() => openModal(() => import('$lib/Modal/QuickShadeConfig.svelte'), {})}
+			>
+				<Icon icon="mdi:gesture-swipe-down" height="none" />
+				Настроить
+			</button>
+		</div>
+
 		<ConfigButtons />
 	</Modal>
 {/if}
@@ -318,5 +344,40 @@
 
 	h1 {
 		margin: 0.35em 0 0.15em 0;
+	}
+
+	.screensaver-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		margin-top: 0.6rem;
+	}
+
+	.ss-desc {
+		font-size: 0.85rem;
+		opacity: 0.5;
+		margin: 0;
+	}
+
+	.ss-btn {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		padding: 0.4rem 0.9rem;
+		border-radius: 0.4rem;
+		background: rgba(255, 255, 255, 0.07);
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		color: inherit;
+		cursor: pointer;
+		font-size: 0.85rem;
+		white-space: nowrap;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.ss-btn :global(svg) {
+		width: 1rem;
+		height: 1rem;
 	}
 </style>

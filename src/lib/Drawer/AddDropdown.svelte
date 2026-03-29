@@ -5,30 +5,18 @@
 	import type { ViewItem } from '$lib/Types';
 	import Icon from '@iconify/svelte';
 	import Ripple from 'svelte-ripple';
-	import { onMount } from 'svelte';
-	import type { ComponentType } from 'svelte';
+	import SidebarButton from '$lib/Drawer/SidebarButton.svelte';
+	import ObjectButton from '$lib/Drawer/ObjectButton.svelte';
+	import SectionButton from '$lib/Drawer/SectionButton.svelte';
+	import HorizontalStackButton from '$lib/Drawer/HorizontalStackButton.svelte';
+	import ScenesButton from '$lib/Drawer/ScenesButton.svelte';
+	import ViewButton from '$lib/Drawer/ViewButton.svelte';
 
 	export let view: ViewItem | undefined;
 
 	let isOpen = false;
 	let showTriangle = false;
 	let container: HTMLDivElement;
-
-	let SidebarButton: ComponentType;
-	let ObjectButton: ComponentType;
-	let SectionButton: ComponentType;
-	let HorizontalStackButton: ComponentType;
-	let ScenesButton: ComponentType;
-	let ViewButton: ComponentType;
-
-	onMount(async () => {
-		SidebarButton = (await import('$lib/Drawer/SidebarButton.svelte')).default;
-		ObjectButton = (await import('$lib/Drawer/ObjectButton.svelte')).default;
-		SectionButton = (await import('$lib/Drawer/SectionButton.svelte')).default;
-		HorizontalStackButton = (await import('$lib/Drawer/HorizontalStackButton.svelte')).default;
-		ScenesButton = (await import('$lib/Drawer/ScenesButton.svelte')).default;
-		ViewButton = (await import('$lib/Drawer/ViewButton.svelte')).default;
-	});
 
 	function handleClick() {
 		isOpen = !isOpen;
@@ -78,18 +66,18 @@
 			out:fade={{ duration: $motion / 3, easing: cubicOut }}
 		>
 			{#if !$dashboard.hide_sidebar}
-				<svelte:component this={SidebarButton} on:clicked={handleClick} />
+				<SidebarButton on:clicked={handleClick} />
 			{/if}
 
-			<svelte:component this={ObjectButton} {view} on:clicked={handleClick} />
+			<ObjectButton {view} on:clicked={handleClick} />
 
-			<svelte:component this={SectionButton} {view} on:clicked={handleClick} />
+			<SectionButton {view} on:clicked={handleClick} />
 
-			<svelte:component this={HorizontalStackButton} {view} on:clicked={handleClick} />
+			<HorizontalStackButton {view} on:clicked={handleClick} />
 
-			<svelte:component this={ScenesButton} {view} on:clicked={handleClick} />
+			<ScenesButton {view} on:clicked={handleClick} />
 
-			<svelte:component this={ViewButton} on:clicked={handleClick} />
+			<ViewButton on:clicked={handleClick} />
 		</div>
 	{/if}
 

@@ -102,6 +102,7 @@
 			if (error?.code === 'start_stream_failed') {
 				// entity does not support play stream service
 				// fallback to Proxy.svelte (stream_url is undefined)
+				loaderVisible = false;
 			} else {
 				console.error(error);
 			}

@@ -16,8 +16,14 @@
 	$: below_horizon = $states?.['sun.sun']?.state === 'below_horizon';
 	$: src = `weather/meteocons/${entity?.state}-${below_horizon ? 'night' : 'day'}.svg`;
 
-	// sensor
+	// sensor (optional extra sensor shown in top-right)
 	$: sensor = sel?.sensor && $states?.[sel?.sensor];
+
+	// extra details — humidity + wind (if available in attributes)
+	$: humidity = attributes?.humidity;
+	$: windSpeed = attributes?.wind_speed;
+	$: windSpeedUnit = attributes?.wind_speed_unit || 'm/s';
+	$: showDetails = sel?.show_details !== false && (humidity !== undefined || windSpeed !== undefined);
 </script>
 
 {#if entity && entity?.state !== 'unavailable'}
@@ -60,6 +66,23 @@
 				{/if}
 			</div>
 		{/if}
+
+		{#if showDetails}
+			<div class="details">
+				{#if humidity !== undefined}
+					<span class="detail-item">
+						<Icon icon="mdi:water-percent" height="11" width="11" />
+						{Math.round(humidity)}%
+					</span>
+				{/if}
+				{#if windSpeed !== undefined}
+					<span class="detail-item">
+						<Icon icon="mdi:weather-windy" height="11" width="11" />
+						{Math.round(windSpeed)}&nbsp;{windSpeedUnit}
+					</span>
+				{/if}
+			</div>
+		{/if}
 	</div>
 {:else}
 	<div class="empty">
@@ -79,10 +102,11 @@
 		padding: var(--theme-sidebar-item-padding);
 		display: grid;
 		grid-template-columns: min-content auto auto;
-		grid-template-rows: auto auto;
+		grid-template-rows: auto auto auto;
 		grid-template-areas:
 			'icon temperature sensor'
-			'icon state state';
+			'icon state state'
+			'icon details details';
 		align-items: center;
 		text-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
 		overflow: visible;
@@ -147,5 +171,22 @@
 		display: flex;
 		margin-right: 0.2rem;
 		align-self: center;
+	}
+
+	.details {
+		grid-area: details;
+		display: flex;
+		gap: 0.6rem;
+		align-items: center;
+		margin-top: 0.1rem;
+	}
+
+	.detail-item {
+		display: flex;
+		align-items: center;
+		gap: 0.2rem;
+		font-size: 0.75rem;
+		color: rgba(255, 255, 255, 0.5);
+		white-space: nowrap;
 	}
 </style>

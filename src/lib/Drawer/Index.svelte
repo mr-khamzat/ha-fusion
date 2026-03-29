@@ -1,5 +1,8 @@
 <script lang="ts">
-	import { editMode, history, historyIndex, motion } from '$lib/Stores';
+	import { editMode, sortMode, history, historyIndex, motion, dashboard } from '$lib/Stores';
+	import Icon from '@iconify/svelte';
+	import Ripple from 'svelte-ripple';
+	import { ripple } from '$lib/Stores';
 	import Separator from '$lib/Drawer/Separator.svelte';
 	import { onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
@@ -82,6 +85,18 @@
 				{/await}
 			</div>
 
+			<div class="sort">
+				<button
+					class="sort-btn"
+					class:sort-active={$sortMode}
+					use:Ripple={$ripple}
+					title="Режим сортировки"
+					on:click={() => ($sortMode = !$sortMode)}
+				>
+					<Icon icon="mdi:sort" height="1.3rem" />
+				</button>
+			</div>
+
 			<Separator />
 
 			<div class="search">
@@ -139,6 +154,33 @@
 		grid-area: code;
 	}
 
+	.sort {
+		grid-area: sort;
+	}
+
+	.sort-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: transparent;
+		border: 1px solid rgba(255,255,255,0.12);
+		border-radius: 0.4rem;
+		color: inherit;
+		cursor: pointer;
+		padding: 0.3rem 0.5rem;
+		opacity: 0.65;
+		position: relative;
+		overflow: hidden;
+		transition: opacity 0.15s, background 0.15s;
+	}
+
+	.sort-btn.sort-active {
+		background: rgba(255, 193, 7, 0.2);
+		border-color: rgba(255, 193, 7, 0.5);
+		color: #ffc107;
+		opacity: 1;
+	}
+
 	.search {
 		grid-area: search;
 		display: grid;
@@ -157,8 +199,8 @@
 	.grid {
 		display: grid;
 		gap: 0.5rem;
-		grid-template-areas: 'edit code div search settings';
-		grid-template-columns: auto auto auto 1fr auto;
+		grid-template-areas: 'edit code sort div search settings';
+		grid-template-columns: auto auto auto auto 1fr auto;
 		width: 100%;
 	}
 
@@ -179,10 +221,10 @@
 		}
 
 		.grid {
-			grid-template-columns: auto auto 1fr 1fr;
+			grid-template-columns: auto auto auto 1fr 1fr;
 			grid-template-areas:
-				'edit code . settings'
-				'search search search search';
+				'edit code sort . settings'
+				'search search search search search';
 		}
 
 		.grid-editmode {

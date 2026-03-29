@@ -77,6 +77,7 @@ export const clickOriginatedFromMenu = writable<boolean>(false);
 
 // global
 export const editMode = writable(false);
+export const sortMode = writable(false);
 export const showDrawer = writable(false);
 export const motion = writable(190);
 export const itemHeight = readable(61.35);
@@ -176,6 +177,15 @@ export const entityList = derived(
 				};
 			})
 );
+
+// command palette
+export const paletteOpen = writable<boolean>(false);
+
+// screensaver
+export const screensaverActive = writable<boolean>(false);
+
+// dark/light mode: 'auto' | 'dark' | 'light'
+export const themeMode = writable<'auto' | 'dark' | 'light'>('auto');
 
 // event
 export const event = writable<string | undefined>();

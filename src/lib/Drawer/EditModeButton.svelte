@@ -1,6 +1,7 @@
 <script lang="ts">
 	import {
 		editMode,
+		sortMode,
 		motion,
 		lang,
 		ripple,
@@ -117,6 +118,7 @@
 
 			case 'toggle':
 				$editMode = !$editMode;
+				if ($editMode) $sortMode = false;
 				if ($clickOriginatedFromMenu) {
 					toggleDrawer();
 				}

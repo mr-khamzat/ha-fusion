@@ -7,17 +7,13 @@
 	export let entity_id: string | undefined = undefined;
 	export let name: string | undefined = undefined;
 	export let strokeWidth: number = 9;
+	export let thresholds: { value: number; color: string }[] | undefined = undefined;
 
 	let entity: HassEntity;
 	$: if (entity_id) entity = $states?.[entity_id];
 
 	let width = 0;
 	let mounted = false;
-
-	const color = {
-		stroke: 'var(--theme-navigate-background-color)',
-		fillColor: 'rgb(255, 255, 255, 0.9)'
-	};
 
 	onMount(() => {
 		setTimeout(() => {
@@ -26,8 +22,19 @@
 	});
 
 	$: state = Math.min(Math.max(Number(entity?.state || 0), 0), 100);
-
 	$: stroke = strokeWidth === null || !strokeWidth ? 9 : strokeWidth;
+
+	// Compute color from thresholds or default
+	$: strokeColor = (() => {
+		if (!thresholds || thresholds.length === 0) return 'rgba(255, 255, 255, 0.9)';
+		// Sort thresholds ascending and pick the last one the value exceeds
+		const sorted = [...thresholds].sort((a, b) => a.value - b.value);
+		let color = sorted[0]?.color || 'rgba(255,255,255,0.9)';
+		for (const t of sorted) {
+			if (state >= t.value) color = t.color;
+		}
+		return color;
+	})();
 
 	$: attributes = {
 		cx: width / 2,
@@ -44,15 +51,17 @@
 	<div class="bar" bind:clientWidth={width}>
 		<svg width="100%" viewBox="0 0 {width} {width}">
 			{#if width}
-				<circle stroke={color.stroke} {...attributes} />
+				<!-- Background track -->
+				<circle stroke="var(--theme-navigate-background-color)" {...attributes} />
 
+				<!-- Progress arc -->
 				<circle
 					class="progress"
 					{...attributes}
-					stroke={color.fillColor}
+					stroke={strokeColor}
 					stroke-dasharray={circumference}
 					style:--dashoffset={circumference * (1 - state / 100)}
-					style:transition="stroke-dashoffset {mounted ? $motion : 0}ms ease"
+					style:transition="stroke-dashoffset {mounted ? $motion : 0}ms ease, stroke 0.4s ease"
 				/>
 			{/if}
 		</svg>

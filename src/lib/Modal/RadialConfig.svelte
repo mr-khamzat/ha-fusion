@@ -32,6 +32,33 @@
 
 	let name = sel?.name;
 	let stroke = sel?.stroke;
+	let thresholds: { value: number; color: string }[] = sel?.thresholds || [];
+
+	const defaultThresholds = [
+		{ value: 0, color: '#22c55e' },
+		{ value: 60, color: '#eab308' },
+		{ value: 85, color: '#ef4444' }
+	];
+
+	function addThreshold() {
+		thresholds = [...thresholds, { value: 0, color: '#ffffff' }];
+		saveThresholds();
+	}
+
+	function removeThreshold(i: number) {
+		thresholds = thresholds.filter((_, idx) => idx !== i);
+		saveThresholds();
+	}
+
+	function saveThresholds() {
+		sel.thresholds = thresholds.length > 0 ? [...thresholds] : undefined;
+		$dashboard = $dashboard;
+	}
+
+	function useDefaults() {
+		thresholds = [...defaultThresholds];
+		saveThresholds();
+	}
 
 	let numberElement: HTMLInputElement;
 
@@ -69,7 +96,7 @@
 		<h2>{$lang('preview')}</h2>
 
 		<div class="preview">
-			<Radial {entity_id} {name} strokeWidth={minMax(stroke)} />
+			<Radial {entity_id} {name} strokeWidth={minMax(stroke)} {thresholds} />
 		</div>
 
 		<h2>{$lang('entity')}</h2>
@@ -121,6 +148,50 @@
 			autocomplete="off"
 		/>
 
+		<h2>Color Thresholds</h2>
+
+		<div class="thresholds">
+			{#each thresholds as threshold, i}
+				<div class="threshold-row">
+					<span class="threshold-at">≥</span>
+					<input
+						type="number"
+						class="input threshold-val"
+						min="0"
+						max="100"
+						bind:value={threshold.value}
+						on:change={saveThresholds}
+						placeholder="0"
+					/>
+					<span class="threshold-pct">%</span>
+					<input
+						type="color"
+						class="color-picker"
+						bind:value={threshold.color}
+						on:change={saveThresholds}
+					/>
+					<!-- svelte-ignore a11y-click-events-have-key-events -->
+					<!-- svelte-ignore a11y-no-static-element-interactions -->
+					<button class="remove-threshold" on:click={() => removeThreshold(i)}>×</button>
+				</div>
+			{/each}
+
+			<div class="threshold-actions">
+				<!-- svelte-ignore a11y-click-events-have-key-events -->
+				<!-- svelte-ignore a11y-no-static-element-interactions -->
+				<button class="add-threshold" on:click={addThreshold} use:Ripple={$ripple}>
+					+ Add threshold
+				</button>
+				{#if thresholds.length === 0}
+					<!-- svelte-ignore a11y-click-events-have-key-events -->
+					<!-- svelte-ignore a11y-no-static-element-interactions -->
+					<button class="add-threshold" on:click={useDefaults} use:Ripple={$ripple}>
+						Use defaults
+					</button>
+				{/if}
+			</div>
+		</div>
+
 		<h2>{$lang('mobile')}</h2>
 
 		<div class="button-container">
@@ -144,3 +215,95 @@
 		<ConfigButtons {sel} />
 	</Modal>
 {/if}
+
+<style>
+	.preview {
+		margin-bottom: 0.5rem;
+	}
+
+	.thresholds {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		margin-bottom: 0.25rem;
+	}
+
+	.threshold-row {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+	}
+
+	.threshold-at {
+		color: rgba(255,255,255,0.5);
+		font-size: 0.9rem;
+		width: 1rem;
+		text-align: center;
+	}
+
+	.threshold-val {
+		width: 4.5rem;
+		padding: 0.4rem 0.5rem;
+	}
+
+	.threshold-pct {
+		color: rgba(255,255,255,0.4);
+		font-size: 0.85rem;
+	}
+
+	.color-picker {
+		width: 2.2rem;
+		height: 2rem;
+		border: 1px solid rgba(255,255,255,0.2);
+		border-radius: 0.35rem;
+		background: none;
+		cursor: pointer;
+		padding: 0.1rem;
+	}
+
+	.remove-threshold {
+		background: rgba(255,255,255,0.08);
+		border: none;
+		border-radius: 50%;
+		width: 22px;
+		height: 22px;
+		cursor: pointer;
+		color: rgba(255,255,255,0.5);
+		font-size: 1rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0;
+		font-family: inherit;
+		line-height: 1;
+		margin-left: auto;
+	}
+
+	.remove-threshold:hover {
+		background: rgba(239,68,68,0.25);
+		color: #ef4444;
+	}
+
+	.threshold-actions {
+		display: flex;
+		gap: 0.5rem;
+		flex-wrap: wrap;
+	}
+
+	.add-threshold {
+		background: rgba(255,255,255,0.08);
+		border: 1px dashed rgba(255,255,255,0.2);
+		border-radius: 0.5rem;
+		color: rgba(255,255,255,0.6);
+		font-size: 0.82rem;
+		padding: 0.4rem 0.8rem;
+		cursor: pointer;
+		font-family: inherit;
+		transition: background 0.15s;
+	}
+
+	.add-threshold:hover {
+		background: rgba(255,255,255,0.14);
+		color: white;
+	}
+</style>

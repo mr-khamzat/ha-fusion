@@ -150,6 +150,51 @@ export function getGraphEntity(
 }
 
 /**
+ * Get random person entity
+ */
+export function getPersonEntity(states: HassEntities) {
+	if (states === undefined) return;
+	const list = Object.values(states).filter((e) => e.entity_id.startsWith('person.'));
+	return list.length ? random(list).entity_id : undefined;
+}
+
+/**
+ * Get random todo entity
+ */
+export function getTodoEntity(states: HassEntities) {
+	if (states === undefined) return;
+	const list = Object.values(states).filter((e) => e.entity_id.startsWith('todo.'));
+	return list.length ? random(list).entity_id : undefined;
+}
+
+/**
+ * Get random climate entity
+ */
+export function getClimateEntity(states: HassEntities) {
+	if (states === undefined) return;
+	const list = Object.values(states).filter((e) => e.entity_id.startsWith('climate.'));
+	return list.length ? random(list).entity_id : undefined;
+}
+
+/**
+ * Get random light entity
+ */
+export function getLightEntity(states: HassEntities) {
+	if (states === undefined) return;
+	const list = Object.values(states).filter((e) => e.entity_id.startsWith('light.'));
+	return list.length ? random(list).entity_id : undefined;
+}
+
+/**
+ * Get random fan entity
+ */
+export function getFanEntity(states: HassEntities) {
+	if (states === undefined) return;
+	const list = Object.values(states).filter((e) => e.entity_id.startsWith('fan.'));
+	return list.length ? random(list).entity_id : undefined;
+}
+
+/**
  * Get random camera entity
  */
 export function getCameraEntity(states: HassEntities) {

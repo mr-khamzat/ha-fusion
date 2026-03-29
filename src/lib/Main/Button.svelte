@@ -134,6 +134,8 @@
 				entity_id
 			});
 
+			if ('vibrate' in navigator) navigator.vibrate(30);
+
 			// loader
 			delayLoading = setTimeout(() => {
 				loading = true;
@@ -465,6 +467,13 @@
 			: 'rgba(0, 0, 0, 0)'
 	}}
 >
+	<!-- health badges -->
+	{#if entity?.state === 'unavailable'}
+		<span class="health-badge unavailable" title="Unavailable">!</span>
+	{:else if attributes?.battery_level !== undefined && attributes.battery_level < 20}
+		<span class="health-badge battery" title="Low battery: {attributes.battery_level}%">🔋</span>
+	{/if}
+
 	<!-- ICON -->
 
 	<div
@@ -556,6 +565,7 @@
 
 <style>
 	.container {
+		position: relative;
 		background-color: var(--theme-button-background-color-off);
 		font-family: inherit;
 		width: 100%;
@@ -647,6 +657,33 @@
 
 	.state[data-state='true'] {
 		color: var(--theme-button-state-color-on);
+	}
+
+	.health-badge {
+		position: absolute;
+		top: 4px;
+		right: 4px;
+		font-size: 10px;
+		width: 16px;
+		height: 16px;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 2;
+		pointer-events: none;
+	}
+
+	.health-badge.unavailable {
+		background: rgba(239, 68, 68, 0.9);
+		color: white;
+		font-weight: bold;
+		font-size: 11px;
+	}
+
+	.health-badge.battery {
+		background: rgba(251, 191, 36, 0.9);
+		font-size: 9px;
 	}
 
 	/* Phone and Tablet (portrait) */

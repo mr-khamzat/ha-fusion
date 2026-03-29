@@ -68,8 +68,35 @@ export function validateCondition(
 			return handleNumericState($states, condition);
 		case 'screen':
 			return handleScreen($editMode, section, condition);
+		case 'time':
+			return handleTime(condition);
 		default:
 			return false;
+	}
+}
+
+/**
+ * Time — visible between after (HH:MM) and before (HH:MM)
+ */
+export function handleTime(condition: Condition): boolean {
+	if (!condition?.after && !condition?.before) return false;
+
+	const now = new Date();
+	const nowMins = now.getHours() * 60 + now.getMinutes();
+
+	const parseHHMM = (s: string) => {
+		const [h, m] = s.split(':').map(Number);
+		return h * 60 + (m || 0);
+	};
+
+	const afterMins = condition.after ? parseHHMM(condition.after) : 0;
+	const beforeMins = condition.before ? parseHHMM(condition.before) : 24 * 60;
+
+	if (afterMins <= beforeMins) {
+		return nowMins >= afterMins && nowMins < beforeMins;
+	} else {
+		// spans midnight
+		return nowMins >= afterMins || nowMins < beforeMins;
 	}
 }
 

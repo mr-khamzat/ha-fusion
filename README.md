@@ -1,64 +1,83 @@
 # ha-fusion
 
-A modern, easy-to-use and performant custom [Home Assistant](https://www.home-assistant.io/) dashboard
+> A modern, fast and feature-rich custom [Home Assistant](https://www.home-assistant.io/) dashboard
 
-<https://www.youtube.com/watch?v=D8mWruSuPOM>
+[![Add-on version](https://img.shields.io/badge/dynamic/yaml?url=https%3A%2F%2Fraw.githubusercontent.com%2Fmr-khamzat%2Faddon-ha-fusion%2Fmain%2Fconfig.yaml&query=version&label=addon&color=blue)](https://github.com/mr-khamzat/addon-ha-fusion)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![GitHub Stars](https://img.shields.io/github/stars/mr-khamzat/ha-fusion?style=social)](https://github.com/mr-khamzat/ha-fusion)
 
 [![preview](/static/preview.png)](https://www.youtube.com/watch?v=D8mWruSuPOM)
 
-If you find this project useful, be sure to 🌟 this repository! If you love it, please consider donating! ❤️ <https://www.paypal.com/paypalme/matt8707>
+---
+
+## История проекта / Project History
+
+**ha-fusion** был создан разработчиком [**matt8707**](https://github.com/matt8707) как альтернатива стандартному дашборду Home Assistant — с упором на скорость, удобство и современный дизайн. Проект получил тысячи звёзд на GitHub и активно использовался сообществом.
+
+В середине 2024 года **matt8707 прекратил поддержку** проекта — последний коммит был сделан в сентябре 2024, открытые issues и PR остались без ответа.
+
+В марте 2026 года разработку возобновил [**mr-khamzat**](https://github.com/mr-khamzat). Форк продолжает традицию оригинального проекта — остаётся **полностью открытым и бесплатным** для всего сообщества Home Assistant.
 
 ---
 
-## 📣 Pre-beta
-
-The current state of this project is **pre-beta**. This means that there's basic functionality missing, incomplete features and unresolved issues. General feedback, bug reports and feature requests are welcome!
+*ha-fusion was originally created by [matt8707](https://github.com/matt8707). Development was abandoned in late 2024. This fork was revived in March 2026 by [mr-khamzat](https://github.com/mr-khamzat) and remains **open source** for the entire HA community.*
 
 ---
 
-## Installation
+## Установка / Installation
 
-### Add-on
+### Аддон Home Assistant (рекомендуется)
 
-For "Operating System" or "Supervised" installation methods, you can install ha-fusion as an add-on:
+Подходит для установок **Home Assistant OS** и **Supervised**.
 
-1. **Add Repository**: To begin, add the ha-fusion add-on repository to your Home Assistant instance. Click the button below or manually add the repository using this URL: <https://github.com/matt8707/addon-ha-fusion>.
+1. **Добавить репозиторий:**
 
-   [![Open your Home Assistant instance and show the add add-on repository dialog with a specific repository URL pre-filled.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fmatt8707%2Faddon-ha-fusion)
+   [![Add Repository](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fmr-khamzat%2Faddon-ha-fusion)
 
-2. **Install Add-on**: After adding the repository, refresh the add-on store page. Locate ha-fusion in the list and proceed with the installation.
+   Или вручную: **Настройки → Дополнения → Магазин → ⠿ → Репозитории** → добавить:
+   ```
+   https://github.com/mr-khamzat/addon-ha-fusion
+   ```
+
+2. **Установить дополнение:** Обновите страницу, найдите **ha-fusion** в магазине и нажмите «Установить».
+
+3. **Запустить:** После установки запустите дополнение. Откроется через Ingress или на порту 5050.
 
 ---
 
 ### Docker
 
-If you're using the "Container" or "Core" installation methods, ha-fusion can be installed via Docker:
+Подходит для установок **Home Assistant Container** и **Core**.
 
-1. **Docker Compose File**: Place your edited copy of the [docker-compose.yml](https://github.com/matt8707/ha-fusion/blob/main/docker-compose.yml) file in a suitable directory.
+**docker-compose.yml:**
+```yaml
+services:
+  ha-fusion:
+    container_name: ha-fusion
+    image: ghcr.io/mr-khamzat/addon-ha-fusion-amd64:latest
+    restart: unless-stopped
+    ports:
+      - "5050:5050"
+    volumes:
+      - ./ha-fusion-data:/app/data
+    environment:
+      - TZ=Europe/Moscow
+      - HASS_URL=http://192.168.1.100:8123
+      - HASS_TOKEN=your_long_lived_token_here
+```
 
-2. **Create Container**:
-   Run the following commands in your terminal to start the container:
+```bash
+docker-compose up -d
+```
 
-   ```bash
-   cd path/to/docker-compose.yml
-   docker-compose up -d ha-fusion
-   ```
-
-#### Update
-
-To update to the latest version of ha-fusion, run the following commands:
-
+**Обновление:**
 ```bash
 docker-compose pull ha-fusion
 docker-compose up -d ha-fusion
 ```
 
 <details>
-<summary>
-   <b>Other</b>
-</summary>
-
-Without docker-compose, updating the container involves additional steps. For each update, it's necessary to first stop the current container, remove it, pull the new image, and then execute the docker run command again.
+<summary>Запуск без docker-compose</summary>
 
 ```bash
 docker run -d \
@@ -66,80 +85,210 @@ docker run -d \
   --network bridge \
   -p 5050:5050 \
   -v /path/to/ha-fusion:/app/data \
-  -e TZ=Europe/Stockholm \
-  -e HASS_URL=http://192.168.1.241:8123 \
+  -e TZ=Europe/Moscow \
+  -e HASS_URL=http://192.168.1.100:8123 \
+  -e HASS_TOKEN=your_token \
   --restart always \
-  ghcr.io/matt8707/ha-fusion
+  ghcr.io/mr-khamzat/addon-ha-fusion-amd64:latest
 ```
-
-#### Kubernetes
-
-If you prefer to use Kubernetes, see [Chart README.md](https://github.com/matt8707/ha-fusion/tree/167c320918544416e2f9272e1edad64b7329269a/charts/ha-fusion)
 
 </details>
 
-...
+---
+
+## Возможности / Features
+
+### Карточки главного дашборда (Main Cards)
+
+| Карточка | Описание |
+|----------|----------|
+| **Button** | Универсальная кнопка / toggle / датчик |
+| **Light** | Управление светом — яркость, цвет, CCT |
+| **RGB Light Card** | Полноценный RGB контроль с цветовым кругом |
+| **Climate** | Термостат — температура, режимы, вентилятор |
+| **Media Player** | Плеер — обложка, прогресс, кнопки управления |
+| **Vacuum** | Пылесос — уборка, база, зоны, мощность |
+| **Fan Card** | Вентилятор — скорость, направление |
+| **Cover / Shutter** | Жалюзи / шторы / ворота |
+| **Lock** | Замок — открыть/закрыть + состояние |
+| **Alarm Card** | Охранная панель — постановка/снятие |
+| **Camera** | Потоковое видео / WebRTC |
+| **Multi-Cam Grid** | Сетка из нескольких камер |
+| **Presence** | Все члены семьи — геолокация, батарея |
+| **Area Overview** | Сводка по комнате (свет, климат, датчики) |
+| **Scene Chips** | Полоса кнопок сцен |
+| **Quick Actions** | Быстрые действия (скрипты / сцены) |
+| **Energy Card** | Энергопотребление и генерация |
+| **Device Tracker** | Трекинг отдельного устройства |
+| **Sensor Grid** | Сетка датчиков в одной карточке |
+| **Binary Sensor** | Датчик присутствия/открытия/движения |
+| **Number / Slider** | Числовой ввод / слайдер |
+| **Button Group** | Группа кнопок в один ряд |
+| **Script Runner** | Запуск скриптов с параметрами |
+| **Timer Card** | Таймер с обратным отсчётом |
+| **Todo Card** | Список дел с отметками |
+| **Weather Card** | Погода с иконками, влажностью, прогнозом |
+| **Sensor Graph** | График датчика с историей |
+| **Irrigation Card** | Управление поливом зонами |
+| **Resource Meter** | Счётчик воды / газа / электричества |
+| **Floor Plan** | Интерактивный план квартиры |
+| **AI Ассистент** | Чат с Claude AI (Anthropic) |
+| **Намаз / Prayer Times** | Времена молитв (намаза) по городу |
+| **Picture Elements** | Изображение с интерактивными элементами |
+| **Conditional Media** | Медиа с условиями показа |
+| **Empty** | Пустое место / разделитель |
+
+### Виджеты сайдбара (Sidebar Widgets)
+
+| Виджет | Описание |
+|--------|----------|
+| **Time** | Текущее время |
+| **Date** | Дата |
+| **Weather** | Погода компактно |
+| **Weather Forecast** | Прогноз на несколько дней |
+| **Sensor** | Показание датчика |
+| **Graph** | График статистики |
+| **History** | История состояний |
+| **Bar** | Прогресс-бар (заряд, влажность…) |
+| **Gauge** | Круговой датчик |
+| **Radial** | Радиальный индикатор |
+| **Thermostat** | Компактный термостат |
+| **Mini Player** | Мини-плеер (обложка + управление) |
+| **Album Art** | Обложка текущего трека |
+| **Person** | Персона (дом/вне дома) |
+| **Todo** | Список задач |
+| **Calendar Widget** | Предстоящие события календаря |
+| **Battery** | Уровень заряда устройств |
+| **Analog Clock** | Аналоговые часы |
+| **Solar Flow** | Поток солнечной энергии |
+| **Notifications** | Уведомления Home Assistant |
+| **Automation Toggle** | Включение/выключение автоматизаций |
+| **Home Mode Widget** | Режим дома (input_select) |
+| **Network Monitor** | Мониторинг сети (ping, скорость) |
+| **Markdown** | Произвольный Markdown текст |
+| **Navigate** | Кнопка перехода между видами |
+| **Image** | Картинка / camera snapshot |
+| **Camera** | Камера в сайдбаре |
+| **Iframe** | Встроенная страница |
+| **Divider** | Разделитель |
+
+### Интерфейс и UX
+
+- **Drag & Drop** — перетаскивание карточек и виджетов в режиме редактирования
+- **Несколько видов** — вкладки / кнопки переключения видов
+- **Свайп между видами** на мобильных устройствах
+- **Адаптивный дизайн** — работает на телефоне, планшете и большом экране
+- **Тёмная тема** — несколько вариантов цветовых схем
+- **Кастомная тема** — настраиваемые цвета, шрифты, отступы
+- **Kiosk режим** (`?kiosk=1`) — скрыть UI для настенного экрана
+- **Меню скрыто** (`?menu=false`) — защита от случайных изменений
+- **Глобальный поиск** `Cmd/Ctrl+K` — быстрый переход к любой сущности или карточке
+- **Screensaver** — заставка после 5 минут бездействия
+- **Адаптивный фон** — фон меняется по цвету активного освещения
+- **Фон на вид** — своя картинка для каждого вида
+- **Haptic feedback** на мобильных (вибрация при нажатии)
+- **Undo/Redo** — история изменений дашборда
+- **Экспорт/импорт** конфигурации YAML
+- **Автоматическое переключение видов** — по условиям (время, состояние сущности)
+- **Детали персоны** — тап на член семьи → геолокация, батарея, трекеры
+
+### Совместимость
+
+- Home Assistant OS / Supervised — через аддон
+- Home Assistant Container / Core — через Docker
+- Поддержка arm64 (Apple M1/M2, Raspberry Pi 4+) и armv7
 
 ---
 
-## Query strings
+## URL параметры
 
-These will only function if you have exposed a port in the add-on configuration or by using Docker. Note that when using Ingress, query strings cannot be read.
-
-### View
-
-To set a particular view when the page loads, add the "view" parameter. For example, if you have a "Bedroom" view, append the query string `?view=Bedroom` to the URL.
-
-### Menu
-
-To disable the menu button, append the query string `?menu=false` to the URL. This is useful when you want to avoid unwanted changes to your dashboard, such as on wall-mounted tablets.
+| Параметр | Пример | Описание |
+|---------|--------|----------|
+| `?view=` | `?view=Living Room` | Открыть конкретный вид при загрузке |
+| `?menu=false` | `?menu=false` | Скрыть кнопку меню (защита от изменений) |
+| `?kiosk=1` | `?kiosk=1` | Kiosk режим — только дашборд без chrome |
 
 ---
 
-## Keyboard Shortcuts
+## Горячие клавиши
 
-| Key                 | Description |
-| ------------------- | ----------- |
-| **f**               | filter      |
-| **esc**             | exit        |
-| **cmd + s**         | save        |
-| **cmd + z**         | undo        |
-| **cmd + shift + z** | redo        |
-
----
-
-## Debug
-
-To debug any errors, check the "Log" tab if you're using the addon, or use `docker logs ha-fusion` for Docker setups. To inspect frontend issues, open the browser's console.
+| Клавиша | Действие |
+|---------|----------|
+| `Cmd/Ctrl + K` | Открыть глобальный поиск |
+| `f` | Поиск в меню |
+| `Escape` | Закрыть / выйти |
+| `Cmd/Ctrl + S` | Сохранить дашборд |
+| `Cmd/Ctrl + Z` | Отменить |
+| `Cmd/Ctrl + Shift + Z` | Повторить |
 
 ---
 
-## Develop
-
-To begin contributing to the project, you'll first need to install node. It's also recommended to install pnpm. If you're unfamiliar with Svelte, consider doing the tutorial at <https://learn.svelte.dev>
+## Разработка / Development
 
 ```bash
-# prerequisites (macos)
-brew install node pnpm
-
-# install
-git clone https://github.com/matt8707/ha-fusion.git
+# Клонировать
+git clone https://github.com/mr-khamzat/ha-fusion.git
 cd ha-fusion
-pnpm install
 
-# environment
+# Установить зависимости
+npm install
+
+# Настроить окружение
 cp .env.example .env
-code .env
+# Отредактировать .env: HASS_URL + HASS_TOKEN
 
-# server
-npm run dev -- --open
+# Запустить дев-сервер
+npm run dev
 
-# dependencies
-pnpm outdated
-pnpm update
+# Сборка
+npm run build
 
-# lint
+# Проверка типов и линтинг
 npm run check
 npm run lint
-npm run format
 ```
+
+### Структура проекта
+
+```
+src/
+  lib/
+    Main/       — карточки главного дашборда
+    Sidebar/    — виджеты сайдбара
+    Modal/      — конфигурационные модалы и диалоги
+    Components/ — переиспользуемые компоненты (Search, Theme, FAB...)
+    Drawer/     — панель редактирования (меню)
+  routes/
+    +page.svelte        — главная страница
+    _api/               — серверные API роуты (prayer_times, ai_chat...)
+```
+
+---
+
+## Вклад в проект / Contributing
+
+Проект открыт для всех! Принимаются:
+- Баг-репорты через [Issues](https://github.com/mr-khamzat/ha-fusion/issues)
+- Pull Request с новыми функциями и исправлениями
+- Идеи и пожелания
+
+---
+
+## Лицензия / License
+
+[MIT License](LICENSE) — свободное использование, модификация и распространение.
+
+---
+
+## Благодарности / Credits
+
+- **[matt8707](https://github.com/matt8707)** — создатель оригинального ha-fusion (2023–2024)
+- **[mr-khamzat](https://github.com/mr-khamzat)** — поддержка и развитие с марта 2026
+- Все контрибьюторы оригинального репозитория
+
+---
+
+<p align="center">
+  <b>Сделано с ❤️ для сообщества Home Assistant</b><br>
+  <i>Built with love for the Home Assistant community</i>
+</p>

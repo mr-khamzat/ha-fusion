@@ -32,23 +32,20 @@
 	$: if (sel?.entity_id) $entity_id = sel?.entity_id;
 	$: if (!sel?.forecast_type || sel?.forecast_type) $forecast_type = sel?.forecast_type;
 
-	// forecast_type fallback
-	$: defaultForecastType = Object.keys(supports)
-		?.find((key) => supports?.[key])
-		?.replace('FORECAST_', '')
-		?.toLowerCase();
+	// forecast_type fallback: first supported or 'daily' as universal fallback (for Yandex etc.)
+	$: defaultForecastType =
+		Object.keys(supports)
+			?.find((key) => supports?.[key])
+			?.replace('FORECAST_', '')
+			?.toLowerCase() || 'daily';
 
-	// get forecast when not dragging
-	// and when entity_id or forecast_type changes
-	$: if (($forecast_type || !$forecast_type) && $entity_id && !$dragging && defaultForecastType) {
+	// get forecast when not dragging and entity changes
+	// removed `&& defaultForecastType` guard — always try to subscribe (fixes Yandex supported_features=0)
+	$: if (($forecast_type || !$forecast_type) && $entity_id && !$dragging) {
 		getForecast();
 
 		if (debug) {
-			console.debug({
-				$forecast_type,
-				$entity_id,
-				$dragging
-			});
+			console.debug({ $forecast_type, $entity_id, $dragging });
 		}
 	}
 
@@ -56,7 +53,6 @@
 		if (busy) return;
 		busy = true;
 
-		// cleanup old sub
 		if (unsubscribe) {
 			if (debug) console.debug('forecast unsubscribed');
 			unsubscribe?.();
@@ -94,33 +90,47 @@
 		}
 	}
 
-	// Because config may not include days_to_show, and some forecasts proviode 48 datapoints, we need to ensure it's correct
 	$: calculated = Math.min(sel?.days_to_show ?? 7, 7);
 
 	interface Forecast {
 		condition: string;
-		icon: WeatherIconMapping;
+		icon: WeatherIconMapping | undefined;
 		date: string;
 		temperature: number;
+		templow?: number;
+		precipitation_probability?: number;
 	}
 
-	let forecast: Forecast[];
-	$: forecast = $forecasts?.[sel?.id]?.forecast?.slice(0, calculated).map(function (item: any) {
-		let icon: WeatherIconMapping =
-			iconSet.conditions[item?.condition as keyof WeatherIconConditions];
-		let x: Forecast = {
-			condition: item?.condition,
-			icon: icon,
-			date: item?.datetime,
-			temperature: item?.temperature
-		};
+	// Use subscription data when available, fall back to attributes.forecast (Yandex legacy)
+	$: rawForecast = $forecasts?.[sel?.id]?.forecast ?? attributes?.forecast;
 
+	let forecast: Forecast[];
+	$: forecast = rawForecast?.slice(0, calculated).map(function (item: any) {
+		const icon: WeatherIconMapping | undefined =
+			iconSet.conditions[item?.condition as keyof WeatherIconConditions];
+		const x: Forecast = {
+			condition: item?.condition,
+			icon,
+			date: item?.datetime,
+			temperature: item?.temperature,
+			// Yandex: templow; HA standard: temperature_low
+			templow: item?.templow ?? item?.temperature_low,
+			precipitation_probability: item?.precipitation_probability
+		};
 		return x;
 	});
 
-	// Different forecast providers choose different intervals, we need to figure out display based on this
+	// Different forecast providers choose different intervals
 	$: forecast_diff =
 		(new Date(forecast?.[1]?.date).valueOf() - new Date(forecast?.[0]?.date).valueOf()) / 3600000;
+
+	// Show templow row when at least one item has it (daily forecasts from Yandex/OpenWeather etc.)
+	$: showTemplow = forecast?.some((f) => f.templow !== undefined && f.templow !== null);
+
+	// Show precip when at least one item has probability
+	$: showPrecip = forecast?.some(
+		(f) => f.precipitation_probability !== undefined && f.precipitation_probability !== null
+	);
 
 	// cleanup
 	onDestroy(() => {
@@ -132,34 +142,54 @@
 </script>
 
 {#if forecast}
-	<div class="container">
-		{#each forecast as forecast}
+	<div class="container" class:with-templow={showTemplow}>
+		{#each forecast as item}
 			<div class="item">
 				<div class="day">
 					{#if forecast_diff < 24}
 						{new Intl.DateTimeFormat($selectedLanguage, { hour: 'numeric' }).format(
-							new Date(forecast.date)
+							new Date(item.date)
 						)}
 					{:else}
 						{new Intl.DateTimeFormat($selectedLanguage, { weekday: 'short' }).format(
-							new Date(forecast.date)
+							new Date(item.date)
 						)}
 					{/if}
 				</div>
 
 				<div class="icon">
-					{#if forecast.icon.local}
+					{#if item.icon?.local}
 						<icon class="ff-fill">
-							<img src="{forecast.icon.icon_variant_day}.svg" width="100%" height="100%" alt="" />
+							<img src="{item.icon.icon_variant_day}.svg" width="100%" height="100%" alt="" />
 						</icon>
+					{:else if item.icon}
+						<Icon icon={item.icon.icon_variant_day} width="100%" height="100%"></Icon>
 					{:else}
-						<Icon icon={forecast.icon.icon_variant_day} width="100%" height="100%"></Icon>
+						<!-- fallback icon for unknown conditions -->
+						<Icon icon="mdi:weather-cloudy" width="100%" height="100%" />
 					{/if}
 				</div>
 
 				<div class="temp">
-					{Math.round(forecast.temperature)}{attributes?.temperature_unit || '°'}
+					{Math.round(item.temperature)}{attributes?.temperature_unit || '°'}
 				</div>
+
+				{#if showTemplow}
+					<div class="templow">
+						{#if item.templow !== undefined && item.templow !== null}
+							{Math.round(item.templow)}{attributes?.temperature_unit || '°'}
+						{:else}
+							–
+						{/if}
+					</div>
+				{/if}
+
+				{#if showPrecip && item.precipitation_probability !== undefined && item.precipitation_probability !== null}
+					<div class="precip" title="Precipitation probability">
+						<Icon icon="mdi:water-outline" height="9" width="9" />
+						{Math.round(item.precipitation_probability)}%
+					</div>
+				{/if}
 			</div>
 		{/each}
 	</div>
@@ -184,6 +214,14 @@
 		width: 3.6rem;
 	}
 
+	.with-templow .item {
+		grid-template-areas:
+			'day'
+			'icon'
+			'temp'
+			'templow';
+	}
+
 	.container {
 		padding: var(--theme-sidebar-item-padding);
 		display: flex;
@@ -195,6 +233,10 @@
 		padding-right: 0.25rem;
 		margin-left: -0.1rem;
 		height: 7.5rem;
+	}
+
+	.with-templow.container {
+		height: 9rem;
 	}
 
 	.empty {
@@ -230,6 +272,28 @@
 		width: 3.6rem;
 		overflow: hidden;
 		text-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+	}
+
+	.templow {
+		grid-area: templow;
+		justify-content: center;
+		display: flex;
+		white-space: nowrap;
+		width: 3.6rem;
+		overflow: hidden;
+		color: rgba(255, 255, 255, 0.45);
+		font-size: 0.85em;
+	}
+
+	.precip {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		gap: 0.15rem;
+		font-size: 0.72rem;
+		color: rgba(147, 197, 253, 0.8);
+		white-space: nowrap;
+		margin-top: 0.1rem;
 	}
 
 	.ff-fill {

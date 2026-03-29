@@ -29,7 +29,61 @@
 	 */
 	export let data;
 
+	import QuickActionsShade from '$lib/Components/QuickActionsShade.svelte';
+
 	let altKeyPressed = false;
+	let kioskMode = false;
+	let screensaverActive = false;
+	let shadeOpen = false;
+
+	// Swipe-down from top to open Quick Actions Shade
+	let _touchStartY = 0;
+	let _touchStartTime = 0;
+
+	function handleTouchStart(e: TouchEvent) {
+		_touchStartY = e.touches[0].clientY;
+		_touchStartTime = Date.now();
+	}
+
+	function handleTouchEnd(e: TouchEvent) {
+		if (screensaverActive || deepSleepActive || $editMode) return;
+		const dy = e.changedTouches[0].clientY - _touchStartY;
+		const dt = Date.now() - _touchStartTime;
+		// Swipe down ≥ 60px, started within top 100px, within 500ms
+		if (_touchStartY < 100 && dy > 60 && dt < 500) {
+			shadeOpen = true;
+		}
+	}
+	let deepSleepActive = false;
+	let deepSleepTimer: ReturnType<typeof setTimeout> | null = null;
+	let paletteOpen = false;
+	let idleTimer: ReturnType<typeof setTimeout>;
+	$: idleTimeout = ($dashboard?.screensaver?.idle_timeout ?? 5) * 60 * 1000;
+	$: motionDetect = $dashboard?.screensaver?.motion_detect ?? false;
+	$: motionSensitivity = $dashboard?.screensaver?.motion_sensitivity ?? 5;
+	$: deepSleepMinutes = $dashboard?.screensaver?.deep_sleep_timeout ?? 2;
+
+	// Start deep-sleep countdown whenever screensaver activates
+	$: if (screensaverActive && motionDetect) {
+		deepSleepTimer = setTimeout(
+			() => {
+				deepSleepActive = true;
+				screensaverActive = false;
+			},
+			deepSleepMinutes * 60 * 1000
+		);
+	} else if (!screensaverActive) {
+		if (deepSleepTimer) {
+			clearTimeout(deepSleepTimer);
+			deepSleepTimer = null;
+		}
+	}
+
+	function handleMotion() {
+		if (!deepSleepActive) return;
+		deepSleepActive = false;
+		screensaverActive = true;
+	}
 
 	$configuration = data?.configuration;
 	$dashboard = data?.dashboard;
@@ -96,7 +150,19 @@
 		retryInterval = setInterval(connect, 3000);
 	}
 
-	onDestroy(() => clearInterval(retryInterval));
+	onDestroy(() => {
+		clearInterval(retryInterval);
+		clearTimeout(idleTimer);
+		if (deepSleepTimer) clearTimeout(deepSleepTimer);
+	});
+
+	function resetIdle() {
+		clearTimeout(idleTimer);
+		if (screensaverActive) screensaverActive = false;
+		idleTimer = setTimeout(() => {
+			screensaverActive = true;
+		}, idleTimeout);
+	}
 
 	onMount(async () => {
 		/**
@@ -105,6 +171,12 @@
 		 */
 		const menuParam = new URLSearchParams(window.location.search).get('menu');
 		$disableMenuButton = menuParam === 'false';
+
+		const kioskParam = new URLSearchParams(window.location.search).get('kiosk');
+		kioskMode = kioskParam === '1' || kioskParam === 'true';
+
+		// start idle timer for screensaver
+		resetIdle();
 
 		/**
 		 * Unregister service worker because it
@@ -152,11 +224,23 @@
 	 * - 'f': Shows drawer and/or focuses on the search field.
 	 */
 	function handleKeydown(event: KeyboardEvent) {
+		// Cmd+K or Ctrl+K → command palette
+		if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
+			event.preventDefault();
+			paletteOpen = !paletteOpen;
+			return;
+		}
+
 		if ($modals.length) return;
 
 		// don't focus on underlying element
 		if (event.key === 'Escape' && !$editMode && document.activeElement) {
 			(document.activeElement as HTMLElement).blur();
+		}
+
+		if (event.key === 'Escape' && paletteOpen) {
+			paletteOpen = false;
+			return;
 		}
 
 		if (event.key === 'Alt') {
@@ -186,7 +270,15 @@
 	}
 </script>
 
-<svelte:window on:keydown={handleKeydown} on:keyup={handleKeyup} />
+<svelte:window
+	on:keydown={handleKeydown}
+	on:keyup={handleKeyup}
+	on:pointermove={resetIdle}
+	on:pointerdown={resetIdle}
+	on:keypress={resetIdle}
+	on:touchstart={handleTouchStart}
+	on:touchend={handleTouchEnd}
+/>
 
 <!-- theme -->
 <Theme initial={data?.theme} />
@@ -221,14 +313,14 @@
 	{/await}
 
 	<!-- menu -->
-	{#if !$disableMenuButton}
+	{#if !$disableMenuButton && !kioskMode}
 		{#await import('$lib/Drawer/MenuButton.svelte') then MenuButton}
 			<svelte:component this={MenuButton.default} {handleClick} />
 		{/await}
 	{/if}
 
 	<!-- header -->
-	{#if $showDrawer}
+	{#if $showDrawer && !kioskMode}
 		{#await import('$lib/Drawer/Index.svelte') then Drawer}
 			<svelte:component this={Drawer.default} {view} {data} {toggleDrawer} />
 		{/await}
@@ -242,7 +334,60 @@
 	{/if}
 </div>
 
+<!-- connection indicator -->
+{#await import('$lib/Components/ConnectionIndicator.svelte') then ConnectionIndicator}
+	<svelte:component this={ConnectionIndicator.default} />
+{/await}
+
+<!-- screensaver -->
+{#if screensaverActive}
+	{#await import('$lib/Components/Screensaver.svelte') then Screensaver}
+		<svelte:component this={Screensaver.default} on:dismiss={() => { screensaverActive = false; resetIdle(); }} />
+	{/await}
+{/if}
+
+<!-- deep sleep (motion camera wake) -->
+{#if deepSleepActive}
+	<!-- svelte-ignore a11y-click-events-have-key-events -->
+	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<div
+		class="deep-sleep"
+		on:click={() => { deepSleepActive = false; resetIdle(); }}
+		on:touchstart={() => { deepSleepActive = false; resetIdle(); }}
+	></div>
+{/if}
+
+<!-- motion detector (camera, runs in deep sleep) -->
+{#if motionDetect && deepSleepActive}
+	{#await import('$lib/Components/MotionDetector.svelte') then MotionDetector}
+		<svelte:component
+			this={MotionDetector.default}
+			sensitivity={motionSensitivity}
+			active={deepSleepActive}
+			on:motion={handleMotion}
+		/>
+	{/await}
+{/if}
+
+<!-- command palette -->
+{#if paletteOpen}
+	{#await import('$lib/Components/CommandPalette.svelte') then Palette}
+		<svelte:component this={Palette.default} on:close={() => (paletteOpen = false)} />
+	{/await}
+{/if}
+
+<!-- quick actions shade -->
+<QuickActionsShade bind:open={shadeOpen} />
+
 <style>
+	.deep-sleep {
+		position: fixed;
+		inset: 0;
+		background: #000;
+		z-index: 9998;
+		cursor: pointer;
+	}
+
 	#layout {
 		display: grid;
 		grid-template-areas:

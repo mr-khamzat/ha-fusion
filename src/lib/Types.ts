@@ -19,6 +19,18 @@ export interface Addons {
 	};
 }
 
+export interface ScreensaverConfig {
+	idle_timeout?: number;
+	show_seconds?: boolean;
+	show_weather?: boolean;
+	weather_entity?: string;
+	temp_sensors?: string[];
+	humidity_sensors?: string[];
+	show_persons?: boolean;
+	show_prayer?: boolean;
+	camera_entity?: string;
+}
+
 export interface Dashboard {
 	views: Views[];
 	sidebar: SidebarItem[];
@@ -26,6 +38,8 @@ export interface Dashboard {
 	hide_views?: boolean;
 	hide_sidebar?: boolean;
 	sidebarWidth?: number;
+	quick_shade_entities?: string[];
+	screensaver?: ScreensaverConfig;
 }
 
 export interface Views {
@@ -34,6 +48,9 @@ export interface Views {
 	icon?: string;
 	sections?: Section[];
 	isDndShadowItem?: boolean;
+	background_url?: string;
+	background_blur?: boolean;
+	auto_switch?: Condition[];
 }
 
 export interface Section {
@@ -50,7 +67,7 @@ export interface Section {
 }
 
 export interface Condition {
-	condition?: 'state' | 'numeric_state' | 'screen' | 'or' | 'and';
+	condition?: 'state' | 'numeric_state' | 'screen' | 'or' | 'and' | 'time';
 	conditions?: Condition[];
 	id?: number;
 	entity?: string;
@@ -59,6 +76,8 @@ export interface Condition {
 	media_query?: string;
 	above?: number;
 	below?: number;
+	after?: string;
+	before?: string;
 	collapsed?: boolean;
 }
 
@@ -86,6 +105,7 @@ export interface ButtonItem {
 	name?: string;
 	icon?: string;
 	color?: string;
+	size?: 'small' | 'medium' | 'large' | 'full';
 	marquee?: boolean;
 	more_info?: boolean;
 	service?: string;
@@ -135,7 +155,78 @@ export type SidebarItem = BarItem &
 	TimeItem &
 	WeatherItem &
 	WeatherForecastItem &
-	DividerItem;
+	DividerItem &
+	SunItem &
+	TodoItem &
+	MiniPlayerItem &
+	PersonItem &
+	MyDayItem;
+
+export interface SunItem {
+	type?: string;
+	id?: number;
+	hide_mobile?: boolean;
+}
+
+export interface TodoItem {
+	type?: string;
+	id?: number;
+	entity_id?: string;
+	name?: string;
+	hide_mobile?: boolean;
+}
+
+export interface ClimateCardItem {
+	type: string;
+	id: number;
+	entity_id: string;
+	name?: string;
+}
+
+export interface LightCardItem {
+	type: string;
+	id: number;
+	entity_id: string;
+	name?: string;
+}
+
+export interface AreaCardItem {
+	type: string;
+	id: number;
+	area_id?: string;
+	name?: string;
+	entity_ids?: string[];
+	icon?: string;
+}
+
+export interface FanCardItem {
+	type: string;
+	id: number;
+	entity_id: string;
+	name?: string;
+}
+
+export interface PresenceCardItem {
+	type: string;
+	id: number;
+	name?: string;
+}
+
+export interface SceneChipsItem {
+	type: string;
+	id: number;
+	entity_ids?: string[];
+	name?: string;
+}
+
+export interface EventTimelineItem {
+	type: string;
+	id: number;
+	entity_ids?: string[];
+	name?: string;
+	max_events?: number;
+	period?: string;
+}
 
 export interface BarItem {
 	type?: string;
@@ -220,6 +311,23 @@ export interface RadialItem {
 	name?: string;
 	stroke?: number;
 	hide_mobile?: boolean;
+	thresholds?: { value: number; color: string }[];
+}
+
+export interface MiniPlayerItem {
+	type?: string;
+	id?: number;
+	entity_id?: string;
+	name?: string;
+	hide_mobile?: boolean;
+}
+
+export interface PersonItem {
+	type?: string;
+	id?: number;
+	entity_id?: string;
+	name?: string;
+	hide_mobile?: boolean;
 }
 
 export interface SensorItem {
@@ -273,6 +381,16 @@ export interface WeatherForecastItem {
 	state?: string;
 	icon_pack?: string;
 	days_to_show?: number;
+	hide_mobile?: boolean;
+}
+
+export interface MyDayItem {
+	type?: string;
+	id?: number;
+	weather_entity?: string;
+	hide_prayer?: boolean;
+	hide_persons?: boolean;
+	hide_calendar?: boolean;
 	hide_mobile?: boolean;
 }
 

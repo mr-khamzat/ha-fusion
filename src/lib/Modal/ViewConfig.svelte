@@ -15,6 +15,8 @@
 	let name = sel?.name;
 
 	let icon: string | undefined = sel?.icon;
+	let background_url: string | undefined = sel?.background_url;
+	let background_blur: boolean = sel?.background_blur ?? false;
 
 	const nameConst = name;
 
@@ -95,6 +97,84 @@
 			</button>
 		</div>
 
+		<h2>{$lang('auto_switch') || 'Auto-switch condition'}</h2>
+		<p class="hint">{$lang('auto_switch_hint') || 'Switch to this view automatically when entity state matches'}</p>
+
+		{#if sel?.auto_switch?.length}
+			{#each sel.auto_switch as cond, i}
+				<div class="auto-switch-row">
+					<input
+						class="input input-small"
+						type="text"
+						placeholder="entity_id (e.g. person.john)"
+						value={cond.entity || ''}
+						on:change={(e) => {
+							sel.auto_switch[i].entity = e.target.value;
+							$dashboard = $dashboard;
+						}}
+					/>
+					<input
+						class="input input-small"
+						type="text"
+						placeholder="state (e.g. home)"
+						value={cond.state || ''}
+						on:change={(e) => {
+							sel.auto_switch[i].state = e.target.value;
+							sel.auto_switch[i].condition = 'state';
+							$dashboard = $dashboard;
+						}}
+					/>
+					<button
+						class="remove-btn"
+						on:click={() => {
+							sel.auto_switch.splice(i, 1);
+							$dashboard = $dashboard;
+						}}
+					>×</button>
+				</div>
+			{/each}
+		{/if}
+
+		<button
+			class="add-condition-btn"
+			on:click={() => {
+				if (!sel.auto_switch) sel.auto_switch = [];
+				sel.auto_switch = [...sel.auto_switch, { condition: 'state', entity: '', state: '' }];
+				$dashboard = $dashboard;
+			}}
+		>+ {$lang('add_condition') || 'Add condition'}</button>
+
+		<h2>{$lang('background')} URL</h2>
+
+		<InputClear
+			condition={background_url}
+			on:clear={() => {
+				background_url = undefined;
+				set('background_url');
+			}}
+			let:padding
+		>
+			<input
+				class="input"
+				type="text"
+				bind:value={background_url}
+				placeholder="https://..."
+				on:change={(event) => set('background_url', event)}
+				style:padding
+				autocomplete="off"
+				spellcheck="false"
+			/>
+		</InputClear>
+
+		<label class="blur-label">
+			<input
+				type="checkbox"
+				bind:checked={background_blur}
+				on:change={() => set('background_blur', { target: { value: background_blur } })}
+			/>
+			{$lang('blur') || 'Blur background'}
+		</label>
+
 		<ConfigButtons {sel} />
 	</Modal>
 {/if}
@@ -112,5 +192,73 @@
 		font-size: 1.2rem;
 		padding-bottom: 3px;
 		white-space: nowrap;
+	}
+
+	.blur-label {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		cursor: pointer;
+		color: var(--theme-button-name-color-off, rgba(255, 255, 255, 0.7));
+		font-size: 0.9rem;
+		margin-top: 0.5rem;
+	}
+
+	.blur-label input[type='checkbox'] {
+		width: 1rem;
+		height: 1rem;
+		accent-color: var(--theme-button-icon-color-on, #5294e2);
+	}
+
+	.hint {
+		font-size: 0.8rem;
+		color: rgba(255, 255, 255, 0.4);
+		margin: 0 0 0.6rem;
+	}
+
+	.auto-switch-row {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+		margin-bottom: 0.4rem;
+	}
+
+	.input-small {
+		flex: 1;
+		font-size: 0.82rem !important;
+	}
+
+	.remove-btn {
+		background: rgba(239, 68, 68, 0.2);
+		border: none;
+		border-radius: 4px;
+		color: #ef4444;
+		cursor: pointer;
+		width: 24px;
+		height: 24px;
+		font-size: 1rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0;
+		font-family: inherit;
+	}
+
+	.add-condition-btn {
+		background: rgba(255, 255, 255, 0.07);
+		border: 1px dashed rgba(255, 255, 255, 0.2);
+		border-radius: 6px;
+		color: rgba(255, 255, 255, 0.6);
+		cursor: pointer;
+		padding: 0.4rem 0.8rem;
+		font-size: 0.82rem;
+		font-family: inherit;
+		width: 100%;
+		margin-bottom: 1rem;
+		transition: background 0.15s;
+	}
+
+	.add-condition-btn:hover {
+		background: rgba(255, 255, 255, 0.12);
 	}
 </style>
