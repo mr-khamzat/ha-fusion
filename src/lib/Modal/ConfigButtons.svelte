@@ -162,7 +162,7 @@
 				···
 			</button>
 
-			{#if showMore && !disableChangeType === true}
+			{#if showMore && !disableChangeType === true && !sidebarItem()}
 				<button
 					transition:fade={{ duration: $motion }}
 					class="options action"
