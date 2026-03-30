@@ -160,7 +160,8 @@ export type SidebarItem = BarItem &
 	TodoItem &
 	MiniPlayerItem &
 	PersonItem &
-	MyDayItem;
+	MyDayItem &
+	YandexWeatherItem;
 
 export interface SunItem {
 	type?: string;
@@ -391,6 +392,15 @@ export interface MyDayItem {
 	hide_prayer?: boolean;
 	hide_persons?: boolean;
 	hide_calendar?: boolean;
+	hide_mobile?: boolean;
+}
+
+export interface YandexWeatherItem {
+	type?: string;
+	id?: number;
+	entity_id?: string;
+	show_apparent?: boolean;
+	show_pressure?: boolean;
 	hide_mobile?: boolean;
 }
 

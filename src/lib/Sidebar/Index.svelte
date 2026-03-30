@@ -50,6 +50,7 @@
 	let HomeModeWidget: ComponentType;
 	let NetworkMonitor: ComponentType;
 	let MyDay: ComponentType;
+	let YandexWeather: ComponentType;
 
 	const imports = {
 		bar: () => import('$lib/Sidebar/Bar.svelte').then((c) => (Bar = c.default)),
@@ -95,7 +96,9 @@
 			import('$lib/Sidebar/HomeModeWidget.svelte').then((c) => (HomeModeWidget = c.default)),
 		network_monitor: () =>
 			import('$lib/Sidebar/NetworkMonitor.svelte').then((c) => (NetworkMonitor = c.default)),
-		my_day: () => import('$lib/Sidebar/MyDay.svelte').then((c) => (MyDay = c.default))
+		my_day: () => import('$lib/Sidebar/MyDay.svelte').then((c) => (MyDay = c.default)),
+		yandex_weather: () =>
+			import('$lib/Sidebar/YandexWeather.svelte').then((c) => (YandexWeather = c.default))
 	};
 
 	$: if ($dashboard?.sidebar) importComponents();
@@ -217,6 +220,8 @@
 				openModal(() => import('$lib/Modal/NetworkMonitorConfig.svelte'), { sel });
 			} else if (sel?.type === 'my_day') {
 				openModal(() => import('$lib/Modal/MyDayConfig.svelte'), { sel });
+			} else if (sel?.type === 'yandex_weather') {
+				openModal(() => import('$lib/Modal/YandexWeatherConfig.svelte'), { sel });
 			} else {
 				openModal(() => import('$lib/Modal/SidebarItemConfig.svelte'), { sel });
 
@@ -603,6 +608,12 @@
 					{:else if NetworkMonitor && item?.type === 'network_monitor' && !hide_mobile}
 						<div on:click={() => handleClick(item?.id)} on:keydown role="button" tabindex="0">
 							<svelte:component this={NetworkMonitor} sel={item} />
+						</div>
+
+						<!-- YANDEX WEATHER -->
+					{:else if YandexWeather && item?.type === 'yandex_weather' && !hide_mobile}
+						<div on:click={() => handleClick(item?.id)} on:keydown role="button" tabindex="0">
+							<svelte:component this={YandexWeather} sel={item} />
 						</div>
 					{/if}
 				</div>
