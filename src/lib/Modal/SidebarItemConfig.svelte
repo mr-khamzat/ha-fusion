@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { dashboard, record, lang, motion, ripple, states, connection, demo } from '$lib/Stores';
-	import { openModal, closeModal } from 'svelte-modals';
-	import { onMount, tick } from 'svelte';
+	import { dashboard, record, lang, ripple, states, connection, demo } from '$lib/Stores';
+	import { closeModal } from 'svelte-modals';
+	import { onMount } from 'svelte';
 	import InputClear from '$lib/Components/InputClear.svelte';
 	import Modal from '$lib/Modal/Index.svelte';
 	import type { SidebarItem } from '$lib/Types';
@@ -385,202 +385,16 @@ import NetworkMonitor from '$lib/Sidebar/NetworkMonitor.svelte';
 		}
 	];
 
-	async function handleClick(id: string) {
-		closeModal();
-
-		// set sidebar item type
+	function handleClick(id: string) {
+		// Set the sidebar item type and save
 		if (sel) {
 			sel.type = id;
 			$dashboard = $dashboard;
 		}
 		$record();
 
-		// wait for exitBeforeEnter animation to complete before opening next modal
-		await tick();
-		await new Promise<void>((resolve) => setTimeout(resolve, $motion + 50));
-
-		switch (id) {
-			case 'time':
-				openModal(() => import('$lib/Modal/TimeConfig.svelte'), { sel });
-				break;
-
-			case 'date':
-				openModal(() => import('$lib/Modal/DateConfig.svelte'), { sel });
-				break;
-
-			case 'divider':
-				openModal(() => import('$lib/Modal/DividerConfig.svelte'), { sel });
-				break;
-
-			case 'sensor':
-				openModal(() => import('$lib/Modal/SensorConfig.svelte'), {
-					sel,
-					demo: $demo.sensor
-				});
-				break;
-
-			case 'weather':
-				openModal(() => import('$lib/Modal/WeatherConfig.svelte'), {
-					sel,
-					demo: $demo.weather
-				});
-				break;
-
-			case 'weather_forecast':
-				openModal(() => import('$lib/Modal/WeatherForecastConfig.svelte'), {
-					sel,
-					demo: $demo.weather_forecast
-				});
-				break;
-
-			case 'camera':
-				openModal(() => import('$lib/Modal/CameraConfig.svelte'), {
-					sel,
-					demo: $demo.camera
-				});
-				break;
-
-			case 'image':
-				openModal(() => import('$lib/Modal/ImageConfig.svelte'), {
-					sel,
-					demo: imageData
-				});
-				break;
-
-			case 'iframe':
-				openModal(() => import('$lib/Modal/IframeConfig.svelte'), { sel });
-				break;
-
-			case 'history':
-				openModal(() => import('$lib/Modal/HistoryConfig.svelte'), {
-					sel,
-					demo: $demo.history
-				});
-				break;
-
-			case 'bar':
-				openModal(() => import('$lib/Modal/BarConfig.svelte'), {
-					sel,
-					demo: $demo.bar
-				});
-				break;
-
-			case 'navigate':
-				openModal(() => import('$lib/Modal/NavigateConfig.svelte'), { sel });
-				break;
-
-			case 'notifications':
-				openModal(() => import('$lib/Modal/NotificationsConfig.svelte'), { sel });
-				break;
-
-			case 'radial':
-				openModal(() => import('$lib/Modal/RadialConfig.svelte'), {
-					sel,
-					demo: $demo.radial
-				});
-				break;
-
-			case 'graph':
-				openModal(() => import('$lib/Modal/GraphConfig.svelte'), {
-					sel,
-					demo: $demo.graph
-				});
-				break;
-
-			case 'template':
-				openModal(() => import('$lib/Modal/TemplateConfig.svelte'), { sel });
-				break;
-
-			case 'timer':
-				openModal(() => import('$lib/Modal/TimerConfig.svelte'), {
-					sel,
-					demo: $demo.timer
-				});
-				break;
-
-			case 'person':
-				openModal(() => import('$lib/Modal/EntityCardConfig.svelte'), {
-					sel,
-					domain: 'person',
-					title: $lang('person') || 'Person'
-				});
-				break;
-
-			case 'todo':
-				openModal(() => import('$lib/Modal/EntityCardConfig.svelte'), {
-					sel,
-					domain: 'todo',
-					title: $lang('todo') || 'Todo'
-				});
-				break;
-
-			case 'sun':
-				openModal(() => import('$lib/Modal/SunConfig.svelte'), { sel });
-				break;
-
-			case 'mini_player':
-				openModal(() => import('$lib/Modal/EntityCardConfig.svelte'), {
-					sel,
-					domain: 'media_player',
-					title: $lang('mini_player') || 'Mini Player'
-				});
-				break;
-
-			case 'gauge':
-				openModal(() => import('$lib/Modal/GaugeConfig.svelte'), { sel });
-				break;
-
-			case 'calendar_widget':
-				openModal(() => import('$lib/Modal/CalendarWidgetConfig.svelte'), { sel });
-				break;
-
-			case 'thermostat':
-				openModal(() => import('$lib/Modal/ThermostatConfig.svelte'), { sel });
-				break;
-
-			case 'solar_flow':
-				openModal(() => import('$lib/Modal/SolarFlowConfig.svelte'), { sel });
-				break;
-
-			case 'analog_clock':
-				openModal(() => import('$lib/Modal/AnalogClockConfig.svelte'), { sel });
-				break;
-
-			case 'battery':
-				openModal(() => import('$lib/Modal/BatteryConfig.svelte'), { sel });
-				break;
-
-			case 'markdown':
-				openModal(() => import('$lib/Modal/MarkdownConfig.svelte'), { sel });
-				break;
-
-			case 'album_art':
-				openModal(() => import('$lib/Modal/AlbumArtConfig.svelte'), { sel });
-				break;
-
-			case 'automation_toggle':
-				openModal(() => import('$lib/Modal/AutomationToggleConfig.svelte'), { sel });
-				break;
-
-			case 'home_mode_widget':
-				openModal(() => import('$lib/Modal/HomeModeConfig.svelte'), { sel });
-				break;
-
-			case 'network_monitor':
-				openModal(() => import('$lib/Modal/NetworkMonitorConfig.svelte'), { sel });
-			break;
-
-		case 'my_day':
-			openModal(() => import('$lib/Modal/MyDayConfig.svelte'), { sel });
-				break;
-
-		case 'yandex_weather':
-			openModal(() => import('$lib/Modal/YandexWeatherConfig.svelte'), { sel });
-			break;
-
-			default:
-				break;
-		}
+		// Close picker — config modal opens when user clicks the widget in sidebar
+		closeModal();
 	}
 
 	/**
