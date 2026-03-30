@@ -395,6 +395,10 @@ import NetworkMonitor from '$lib/Sidebar/NetworkMonitor.svelte';
 		}
 		$record();
 
+		// wait for exitBeforeEnter animation to complete before opening next modal
+		await tick();
+		await new Promise<void>((resolve) => setTimeout(resolve, $motion + 50));
+
 		switch (id) {
 			case 'time':
 				openModal(() => import('$lib/Modal/TimeConfig.svelte'), { sel });
